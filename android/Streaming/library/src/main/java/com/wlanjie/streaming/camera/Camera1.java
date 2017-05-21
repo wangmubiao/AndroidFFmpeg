@@ -73,13 +73,13 @@ class Camera1 extends CameraViewImpl {
     }
 
     @Override
-    void startPreview(int width, int height) {
+    public void startPreview(int width, int height) {
         setUpPreview();
         adjustCameraParameters();
     }
 
     @Override
-    void start() {
+    public void start() {
         chooseCamera();
         openCamera();
         setUpPreview();
@@ -88,7 +88,7 @@ class Camera1 extends CameraViewImpl {
     }
 
     @Override
-    void stop() {
+    public void stop() {
         if (mCamera != null) {
             mCamera.stopPreview();
         }
@@ -106,12 +106,12 @@ class Camera1 extends CameraViewImpl {
     }
 
     @Override
-    boolean isCameraOpened() {
+    public boolean isCameraOpened() {
         return mCamera != null;
     }
 
     @Override
-    void setFacing(int facing) {
+    public void setFacing(int facing) {
         if (mFacing == facing) {
             return;
         }
@@ -123,7 +123,7 @@ class Camera1 extends CameraViewImpl {
     }
 
     @Override
-    int getFacing() {
+    public int getFacing() {
         return mFacing;
     }
 

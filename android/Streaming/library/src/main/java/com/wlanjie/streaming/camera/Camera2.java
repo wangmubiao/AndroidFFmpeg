@@ -126,7 +126,7 @@ class Camera2 extends CameraViewImpl {
     }
 
     @Override
-    void start() {
+    public void start() {
         startBackgroundThread();
         chooseCameraIdByFacing();
         collectCameraInfo();
@@ -134,7 +134,7 @@ class Camera2 extends CameraViewImpl {
     }
 
     @Override
-    void stop() {
+    public void stop() {
         if (mCaptureSession != null) {
             mCaptureSession.close();
             mCaptureSession = null;
@@ -160,12 +160,12 @@ class Camera2 extends CameraViewImpl {
     }
 
     @Override
-    boolean isCameraOpened() {
+    public boolean isCameraOpened() {
         return mCamera != null;
     }
 
     @Override
-    void setFacing(int facing) {
+    public void setFacing(int facing) {
         if (mFacing == facing) {
             return;
         }
@@ -177,7 +177,7 @@ class Camera2 extends CameraViewImpl {
     }
 
     @Override
-    int getFacing() {
+    public int getFacing() {
         return mFacing;
     }
 
@@ -347,7 +347,7 @@ class Camera2 extends CameraViewImpl {
      * <p>This rewrites {@link #mPreviewRequestBuilder}.</p>
      */
     @Override
-    void startPreview(int width, int height) {
+    public void startPreview(int width, int height) {
         if (!isCameraOpened()) {
             return;
         }

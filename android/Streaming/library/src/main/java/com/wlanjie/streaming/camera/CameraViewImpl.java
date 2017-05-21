@@ -21,7 +21,7 @@ import android.view.View;
 
 import java.util.Set;
 
-abstract class CameraViewImpl {
+public abstract class CameraViewImpl {
 
     final CameraCallback mCallback;
 
@@ -35,7 +35,7 @@ abstract class CameraViewImpl {
         mCallback = callback;
     }
 
-    void setPreviewSurface(SurfaceTexture previewSurface) {
+    public void setPreviewSurface(SurfaceTexture previewSurface) {
         mPreviewSurface = previewSurface;
     }
 
@@ -44,17 +44,17 @@ abstract class CameraViewImpl {
         mHeight = height;
     }
 
-    abstract void start();
+    public abstract void start();
 
-    abstract void stop();
+    public abstract void stop();
 
-    abstract boolean isCameraOpened();
+    public abstract boolean isCameraOpened();
 
-    abstract void setFacing(int facing);
+    public abstract void setFacing(int facing);
 
-    abstract int getFacing();
+    public abstract int getFacing();
 
-    abstract void startPreview(int width, int height);
+    public abstract void startPreview(int width, int height);
 
     abstract Set<AspectRatio> getSupportedAspectRatios();
 

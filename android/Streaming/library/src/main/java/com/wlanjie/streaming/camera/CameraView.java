@@ -19,14 +19,8 @@ package com.wlanjie.streaming.camera;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.SurfaceTexture;
-import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
-import android.opengl.Matrix;
 import android.os.Build;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Message;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.IntDef;
@@ -39,18 +33,14 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import com.wlanjie.streaming.R;
+import com.wlanjie.streaming.view.RendererSurfaceView;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Set;
 
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
-
-public class CameraView extends FrameLayout implements GLSurfaceView.Renderer {
+public class CameraView extends FrameLayout {
 
     /** The camera device faces the opposite direction as the device's screen. */
     public static final int FACING_BACK = Constants.FACING_BACK;
@@ -92,27 +82,7 @@ public class CameraView extends FrameLayout implements GLSurfaceView.Renderer {
 
     private final DisplayOrientationDetector mDisplayOrientationDetector;
 
-    final GLSurfaceView mGLSurfaceView;
-
-    private int mSurfaceWidth;
-
-    private int mSurfaceHeight;
-
-    private Handler mHandler;
-
-    private Callback mCallback;
-
-    private EglCore mEglCore;
-
-    private int mTextureId;
-
-    private SurfaceTexture mSurfaceTexture;
-
-    private float[] mProjectionMatrix = new float[16];
-
-    private float[] mSurfaceMatrix = new float[16];
-
-    private float[] mTransformMatrix = new float[16];
+    final RendererSurfaceView mGLSurfaceView;
 
     public CameraView(Context context) {
         this(context, null);
@@ -128,13 +98,7 @@ public class CameraView extends FrameLayout implements GLSurfaceView.Renderer {
         // Internal setup
 
         final View view = View.inflate(context, R.layout.texture_view, this);
-        mGLSurfaceView = (GLSurfaceView) view.findViewById(R.id.gl_surface_view);
-        mGLSurfaceView.setEGLContextClientVersion(2);
-        mGLSurfaceView.setRenderer(this);
-        mGLSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-
-        mTextureId = OpenGLUtils.getExternalOESTextureID();
-        mSurfaceTexture = new SurfaceTexture(mTextureId);
+        mGLSurfaceView = (RendererSurfaceView) view.findViewById(R.id.gl_surface_view);
 
         mCallbacks = new CallbackBridge();
         if (Build.VERSION.SDK_INT < 21) {
@@ -144,7 +108,7 @@ public class CameraView extends FrameLayout implements GLSurfaceView.Renderer {
         } else {
             mImpl = new Camera2Api23(mCallbacks, context);
         }
-        mImpl.setPreviewSurface(mSurfaceTexture);
+        mGLSurfaceView.setCameraView(mImpl);
         // Attributes
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CameraView, defStyleAttr,
                 R.style.Widget_CameraView);
@@ -165,80 +129,6 @@ public class CameraView extends FrameLayout implements GLSurfaceView.Renderer {
                 mImpl.setDisplayOrientation(displayOrientation);
             }
         };
-    }
-
-    private ByteBuffer mFrameBuffer;
-    @Override
-    public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        GLES20.glDisable(GL10.GL_DITHER);
-        GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-
-        HandlerThread thread = new HandlerThread("glDraw");
-        thread.start();
-        mHandler = new Handler(thread.getLooper()) {
-
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                IntBuffer buffer = mEglCore.getRgbaBuffer();
-                mFrameBuffer.asIntBuffer().put(buffer.array());
-                if (mCallback != null) {
-                    mCallback.onPreviewFrame(CameraView.this, mFrameBuffer.array());
-                }
-            }
-        };
-
-        mEglCore = new EglCore(getResources());
-        mEglCore.init();
-
-        mSurfaceTexture.setOnFrameAvailableListener(new SurfaceTexture.OnFrameAvailableListener() {
-            @Override
-            public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-                mGLSurfaceView.requestRender();
-            }
-        });
-    }
-
-    @Override
-    public void onSurfaceChanged(GL10 gl, int width, int height) {
-        mSurfaceWidth = width;
-        mSurfaceHeight = height;
-        mFrameBuffer = ByteBuffer.allocate(width * height * 4);
-        mCallbacks.onPreview(width, height);
-
-        mEglCore.onInputSizeChanged(width, height);
-        GLES20.glViewport(0, 0, width, height);
-        mEglCore.onDisplaySizeChange(width, height);
-
-        float outputAspectRatio = width > height ? (float) width / height : (float) height / width;
-        float aspectRatio = outputAspectRatio / outputAspectRatio;
-        if (width > height) {
-            Matrix.orthoM(mProjectionMatrix, 0, -1.0f, 1.0f, -aspectRatio, aspectRatio, -1.0f, 1.0f);
-        } else {
-            Matrix.orthoM(mProjectionMatrix, 0, -aspectRatio, aspectRatio, -1.0f, 1.0f, -1.0f, 1.0f);
-        }
-    }
-
-    @Override
-    public void onDrawFrame(GL10 gl) {
-        GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-
-        mSurfaceTexture.updateTexImage();
-
-        mSurfaceTexture.getTransformMatrix(mSurfaceMatrix);
-        Matrix.multiplyMM(mTransformMatrix, 0, mSurfaceMatrix, 0, mProjectionMatrix, 0);
-        mEglCore.setTextureTransformMatrix(mTransformMatrix);
-        mEglCore.onDrawFrame(mTextureId);
-        mHandler.sendEmptyMessage(0);
-    }
-
-    public int getSurfaceWidth() {
-        return mSurfaceWidth;
-    }
-
-    public int getSurfaceHeight() {
-        return mSurfaceHeight;
     }
 
     @Override
@@ -349,7 +239,6 @@ public class CameraView extends FrameLayout implements GLSurfaceView.Renderer {
      */
     public void stop() {
         mImpl.stop();
-        mEglCore.destroy();
     }
 
     /**
@@ -366,7 +255,6 @@ public class CameraView extends FrameLayout implements GLSurfaceView.Renderer {
      * @see #removeCallback(Callback)
      */
     public void addCallback(@NonNull Callback callback) {
-        mCallback = callback;
         mCallbacks.add(callback);
     }
 
@@ -455,9 +343,9 @@ public class CameraView extends FrameLayout implements GLSurfaceView.Renderer {
      * @param autoFocus {@code true} to enable continuous auto-focus mode. {@code false} to
      *                  disable it.
      */
-//    public void setAutoFocus(boolean autoFocus) {
-//        mImpl.setAutoFocus(autoFocus);
-//    }
+    public void setAutoFocus(boolean autoFocus) {
+        mImpl.setAutoFocus(autoFocus);
+    }
 
     /**
      * Returns whether the continuous auto-focus mode is enabled.
