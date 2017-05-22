@@ -37,7 +37,11 @@ public class Camera9 implements Camera {
 
     private int mFacing;
 
-    private AspectRatio mAspectRatio
+    private AspectRatio mAspectRatio;
+
+    private int mSurfaceWidth;
+
+    private int mSurfaceHeight;
 
     private boolean mShowingPreview = false;
 
@@ -53,6 +57,12 @@ public class Camera9 implements Camera {
     public void start(SurfaceTexture texture) {
         chooseCamera();
         openCamera();
+    }
+
+    @Override
+    public void setSurfaceSize(int width, int height) {
+        mSurfaceWidth = width;
+        mSurfaceHeight = height;
     }
 
     private void chooseCamera() {
@@ -108,8 +118,8 @@ public class Camera9 implements Camera {
     private Size chooseOptimalSize(SortedSet<Size> sizes) {
         int desiredWidth;
         int desiredHeight;
-        final int surfaceWidth = mWidth;
-        final int surfaceHeight = mHeight;
+        final int surfaceWidth = mSurfaceWidth;
+        final int surfaceHeight = mSurfaceHeight;
         if (mDisplayOrientation == 90 || mDisplayOrientation == 270) {
             desiredWidth = surfaceHeight;
             desiredHeight = surfaceWidth;
@@ -172,7 +182,7 @@ public class Camera9 implements Camera {
         mFacing = facing;
         if (isCameraOpened()) {
             stop();
-            start();
+//            start();
         }
     }
 

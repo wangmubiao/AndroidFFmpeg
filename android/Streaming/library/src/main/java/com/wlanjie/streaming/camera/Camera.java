@@ -13,6 +13,8 @@ public interface Camera {
 
     void stop();
 
+    void setSurfaceSize(int width, int height);
+
     boolean isCameraOpened();
 
     void setFacing(int facing);

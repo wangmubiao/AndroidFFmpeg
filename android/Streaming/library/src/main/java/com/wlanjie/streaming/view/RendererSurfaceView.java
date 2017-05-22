@@ -5,13 +5,14 @@ import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 
+import com.wlanjie.streaming.camera.CameraCallback;
 import com.wlanjie.streaming.camera.CameraViewImpl;
 import com.wlanjie.streaming.video.SurfaceRenderer;
 
 /**
  * Created by wlanjie on 2017/5/20.
  */
-public class RendererSurfaceView extends GLSurfaceView {
+public class RendererSurfaceView extends GLSurfaceView implements CameraCallback {
 
     private SurfaceRenderer mSurfaceRenderer;
     private CameraViewImpl mCameraView;
@@ -22,15 +23,15 @@ public class RendererSurfaceView extends GLSurfaceView {
 
     public RendererSurfaceView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init(context);
+        init();
     }
 
     public SurfaceRenderer getSurfaceRenderer() {
         return mSurfaceRenderer;
     }
 
-    private void init(Context context) {
-        mSurfaceRenderer = new SurfaceRenderer();
+    private void init() {
+        mSurfaceRenderer = new SurfaceRenderer(getContext(), this);
         setEGLContextClientVersion(2);
         setRenderer(mSurfaceRenderer);
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
@@ -53,5 +54,25 @@ public class RendererSurfaceView extends GLSurfaceView {
                 // stop camera
             }
         });
+    }
+
+    @Override
+    public void onCameraOpened(int previewWidth, int previewHeight) {
+
+    }
+
+    @Override
+    public void onCameraClosed() {
+
+    }
+
+    @Override
+    public void onPreviewFrame(byte[] data) {
+
+    }
+
+    @Override
+    public void onPreview(int previewWidth, int previewHeight) {
+
     }
 }

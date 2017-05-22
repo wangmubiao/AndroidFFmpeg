@@ -1,9 +1,14 @@
 package com.wlanjie.streaming.video;
 
+import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.os.Build;
 
+import com.wlanjie.streaming.camera.Camera;
+import com.wlanjie.streaming.camera.Camera20;
+import com.wlanjie.streaming.camera.Camera9;
 import com.wlanjie.streaming.camera.CameraCallback;
 import com.wlanjie.streaming.camera.CameraViewImpl;
 
@@ -15,13 +20,21 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public class SurfaceRenderer implements GLSurfaceView.Renderer, SurfaceTexture.OnFrameAvailableListener {
 
-    private CameraViewImpl mCameraView;
     private SurfaceTexture mSurfaceTexture;
     private int mSurfaceTextureId;
     private CameraCallback mCameraCallback;
+    private Camera mCamera;
 
-    public SurfaceRenderer(CameraCallback callback) {
+    public SurfaceRenderer(Context context, CameraCallback callback) {
         mCameraCallback = callback;
+
+        if (Build.VERSION.SDK_INT < 21) {
+            mCamera = new Camera9(callback);
+        } else if (Build.VERSION.SDK_INT < 23) {
+            mCamera = new Camera20(context, callback);
+        } else {
+            mCamera = new Camera20(context, callback);
+        }
     }
 
     @Override
@@ -31,12 +44,12 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer, SurfaceTexture.O
         GLES20.glDisable(GLES20.GL_BLEND);
 
         initSurfaceTexture();
-        mCameraView.setPreviewSurface(mSurfaceTexture);
     }
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
-//        mCameraView.start();
+        mCamera.setSurfaceSize(width, height);
+        mCamera.start(mSurfaceTexture);
     }
 
     @Override
