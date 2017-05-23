@@ -28,18 +28,18 @@ public class MainActivity extends AppCompatActivity {
         }
 
         mCameraView = (CameraView) findViewById(R.id.surface_view);
-        mCameraView.postDelayed(new Runnable() {
-            @Override
-            public void run() {
+//        mCameraView.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
                 encoder = new Encoder.Builder()
                     .setSoftEncoder(Encoder.SOFT_ENCODE)
                     .setCameraView(mCameraView)
                     .build();
-                String url = "rtmp://192.168.1.103/live/livestream";
+                String url = "rtmp://www.ossrs.net:1935/live/demo";
 //                String url = "rtmp://192.168.0.143/live/livestream";
                 encoder.start(url);
-            }
-        }, 1000);
+//            }
+//        }, 1000);
     }
 
     @Override

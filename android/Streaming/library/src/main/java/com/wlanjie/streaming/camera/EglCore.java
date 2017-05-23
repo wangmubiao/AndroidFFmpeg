@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * Created by wlanjie on 2016/12/12.
  */
 
-final class EglCore {
+public final class EglCore {
 
     private static final int NO_INIT = -1;
     private static final int NO_TEXTURE = -2;
@@ -108,7 +108,7 @@ final class EglCore {
     private boolean mIsInitialized;
 
     private final Resources mResources;
-    EglCore(Resources resources) {
+    public EglCore(Resources resources) {
         this.mResources = resources;
         mRunOnDraw = new ConcurrentLinkedQueue<>();
         mCubeBuffer = ByteBuffer.allocateDirect(CUBE.length * 4)
@@ -122,18 +122,18 @@ final class EglCore {
         mTextureBuffer.put(TEXTURE_NO_ROTATION).position(0);
     }
 
-    void init() {
+    public void init() {
         onInit();
         onInitialized();
     }
 
-    void onInputSizeChanged(int width, int height) {
+    public void onInputSizeChanged(int width, int height) {
         this.mInputWidth = width;
         this.mInputHeight = height;
         initFboTexture(width, height);
     }
 
-    void onDisplaySizeChange(int width, int height) {
+    public void onDisplaySizeChange(int width, int height) {
         mDisplayWidth = width;
         mDisplayHeight = height;
     }
@@ -213,7 +213,7 @@ final class EglCore {
         }
     }
 
-    int onDrawFrame(int cameraTextureId) {
+    public int onDrawFrame(int cameraTextureId) {
         int fboTextureId = drawToFboTexture(cameraTextureId);
         return drawToScreen(fboTextureId);
     }
@@ -305,7 +305,7 @@ final class EglCore {
 
     void onDrawArrayAfter() {};
 
-    void setTextureTransformMatrix(float[] matrix) {
+    public void setTextureTransformMatrix(float[] matrix) {
         mTextureTransformMatrix = matrix;
     }
 

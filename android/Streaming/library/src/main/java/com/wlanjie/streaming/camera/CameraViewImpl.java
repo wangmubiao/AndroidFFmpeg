@@ -21,54 +21,37 @@ import android.view.View;
 
 import java.util.Set;
 
-abstract class CameraViewImpl {
+public interface CameraViewImpl {
 
-    final CameraCallback mCallback;
+    public void setPreviewSurface(SurfaceTexture previewSurface);
 
-    SurfaceTexture mPreviewSurface;
+    public void setSize(int width, int height);
 
-    int mWidth;
+    public abstract void start();
 
-    int mHeight;
+    public abstract void stop();
 
-    CameraViewImpl(CameraCallback callback) {
-        mCallback = callback;
-    }
+    public abstract boolean isCameraOpened();
 
-    void setPreviewSurface(SurfaceTexture previewSurface) {
-        mPreviewSurface = previewSurface;
-    }
+    public abstract void setFacing(int facing);
 
-    void setSize(int width, int height) {
-        mWidth = width;
-        mHeight = height;
-    }
+    public abstract int getFacing();
 
-    abstract void start();
+    public abstract void startPreview();
 
-    abstract void stop();
+    public abstract Set<AspectRatio> getSupportedAspectRatios();
 
-    abstract boolean isCameraOpened();
+    public abstract void setAspectRatio(AspectRatio ratio);
 
-    abstract void setFacing(int facing);
+    public abstract AspectRatio getAspectRatio();
 
-    abstract int getFacing();
+    public abstract void setAutoFocus(boolean autoFocus);
 
-    abstract void startPreview(int width, int height);
+    public abstract boolean getAutoFocus();
 
-    abstract Set<AspectRatio> getSupportedAspectRatios();
+    public abstract void setFlash(int flash);
 
-    abstract void setAspectRatio(AspectRatio ratio);
+    public abstract int getFlash();
 
-    abstract AspectRatio getAspectRatio();
-
-    abstract void setAutoFocus(boolean autoFocus);
-
-    abstract boolean getAutoFocus();
-
-    abstract void setFlash(int flash);
-
-    abstract int getFlash();
-
-    abstract void setDisplayOrientation(int displayOrientation);
+    public abstract void setDisplayOrientation(int displayOrientation);
 }

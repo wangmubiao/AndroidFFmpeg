@@ -130,15 +130,17 @@ public abstract class Encoder {
         if (mAudioRecord == null) {
             throw new IllegalStateException("start audio record failed.");
         }
-        mBuilder.previewWidth = mBuilder.cameraView.getSurfaceWidth();
-        mBuilder.previewHeight = mBuilder.cameraView.getSurfaceHeight();
+//        mBuilder.previewWidth = mBuilder.cameraView.getSurfaceWidth();
+//        mBuilder.previewHeight = mBuilder.cameraView.getSurfaceHeight();
+        mBuilder.previewWidth = 720;
+        mBuilder.previewHeight = 1280;
         setEncoderResolution(mBuilder.width, mBuilder.height);
         openEncoder();
 
         startPreview();
         startAudioRecord();
-        mBuilder.cameraView.setFacing(CameraView.FACING_FRONT);
-        mBuilder.cameraView.start();
+//        mBuilder.cameraView.setFacing(CameraView.FACING_FRONT);
+//        mBuilder.cameraView.start();
 
         new Thread(new Runnable() {
             @Override
@@ -249,7 +251,7 @@ public abstract class Encoder {
      * stop camera preview, audio record and close encoder
      */
     public void stop() {
-        mBuilder.cameraView.stop();
+//        mBuilder.cameraView.stop();
         stopAudioRecord();
         closeEncoder();
         destroy();
