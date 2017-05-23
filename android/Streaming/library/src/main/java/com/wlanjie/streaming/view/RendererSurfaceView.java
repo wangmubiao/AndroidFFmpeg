@@ -4,22 +4,14 @@ import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 
 import com.wlanjie.streaming.camera.AspectRatio;
-import com.wlanjie.streaming.camera.Camera1;
-import com.wlanjie.streaming.camera.Camera2;
-import com.wlanjie.streaming.camera.Camera2Api23;
-import com.wlanjie.streaming.camera.CameraCallback;
-import com.wlanjie.streaming.camera.CameraView;
 import com.wlanjie.streaming.camera.CameraViewImpl;
 import com.wlanjie.streaming.camera.EglCore;
 import com.wlanjie.streaming.video.SurfaceRenderer;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -36,15 +28,13 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
   private int mSurfaceTextureId;
 
   private CameraViewImpl mImpl;
-  private CallbackBridge mCallbacks;
 
-  public RendererSurfaceView(Context context, CameraViewImpl impl) {
-    this(context, null, impl);
+  public RendererSurfaceView(Context context) {
+    this(context, null);
   }
 
-  public RendererSurfaceView(Context context, AttributeSet attrs, CameraViewImpl impl) {
+  public RendererSurfaceView(Context context, AttributeSet attrs) {
     super(context, attrs);
-    init(impl);
   }
 
   private void init(CameraViewImpl impl) {
@@ -100,33 +90,6 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
   @Override
   public void onDrawFrame(GL10 gl) {
 
-  }
-
-  class CallbackBridge implements CameraCallback {
-
-    private final List<CameraView.Callback> mCallbacks = new ArrayList<>();
-
-    private boolean mRequestLayoutOnOpen;
-
-    @Override
-    public void onCameraOpened(int previewWidth, int previewHeight) {
-
-    }
-
-    @Override
-    public void onCameraClosed() {
-
-    }
-
-    @Override
-    public void onPreviewFrame(byte[] data) {
-
-    }
-
-    @Override
-    public void onPreview(int previewWidth, int previewHeight) {
-
-    }
   }
 
   public void setDisplayOrientation(int displayOrientation) {

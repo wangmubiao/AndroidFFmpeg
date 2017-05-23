@@ -16,7 +16,6 @@
 
 package com.wlanjie.streaming.camera;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Build;
@@ -28,7 +27,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.os.ParcelableCompat;
 import android.support.v4.os.ParcelableCompatCreatorCallbacks;
 import android.util.AttributeSet;
-import android.view.View;
 import android.widget.FrameLayout;
 
 import com.wlanjie.streaming.R;
