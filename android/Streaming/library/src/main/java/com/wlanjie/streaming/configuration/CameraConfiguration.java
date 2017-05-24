@@ -1,6 +1,10 @@
 package com.wlanjie.streaming.configuration;
 
+import android.graphics.SurfaceTexture;
+
+import com.wlanjie.streaming.camera.AspectRatio;
 import com.wlanjie.streaming.camera.CameraCallback;
+import com.wlanjie.streaming.camera.Constants;
 
 /**
  * Created by wlanjie on 2017/5/23.
@@ -32,11 +36,14 @@ public class CameraConfiguration {
   public final int height;
   public final int width;
   public final int fps;
-  public final Facing facing;
+  public final int facing;
   public final Orientation orientation;
   public final FocusMode focusMode;
   public final int screenRotation;
   public final CameraCallback cameraCallback;
+  public final AspectRatio aspectRatio;
+  public final int displayOrientation;
+  public final SurfaceTexture surfaceTexture;
 
   private CameraConfiguration(final Builder builder) {
     height = builder.height;
@@ -47,6 +54,17 @@ public class CameraConfiguration {
     focusMode = builder.focusMode;
     screenRotation = builder.screenRotation;
     cameraCallback = builder.cameraCallback;
+    if (builder.aspectRatio == null) {
+      aspectRatio = Constants.DEFAULT_ASPECT_RATIO;
+    } else {
+      this.aspectRatio = builder.aspectRatio;
+    }
+    if (builder.displayOrientation == 0) {
+      displayOrientation = 90;
+    } else {
+      displayOrientation = builder.displayOrientation;
+    }
+    surfaceTexture = builder.surfaceTexture;
   }
 
   public static CameraConfiguration createDefault() {
@@ -58,10 +76,13 @@ public class CameraConfiguration {
     private int width = DEFAULT_WIDTH;
     private int fps = DEFAULT_FPS;
     private int screenRotation = 90;
-    private Facing facing = DEFAULT_FACING;
+    private int facing = Constants.FACING_BACK;
     private Orientation orientation = DEFAULT_ORIENTATION;
     private FocusMode focusMode = DEFAULT_FOCUSMODE;
     private CameraCallback cameraCallback;
+    private AspectRatio aspectRatio;
+    private int displayOrientation;
+    private SurfaceTexture surfaceTexture;
 
     public Builder setPreview(int height, int width) {
       this.height = height;
@@ -69,7 +90,7 @@ public class CameraConfiguration {
       return this;
     }
 
-    public Builder setFacing(Facing facing) {
+    public Builder setFacing(int facing) {
       this.facing = facing;
       return this;
     }
@@ -96,6 +117,21 @@ public class CameraConfiguration {
 
     public Builder setCameraCallback(CameraCallback callback) {
       this.cameraCallback = callback;
+      return this;
+    }
+
+    public Builder setAspectRatio(AspectRatio aspectRatio) {
+      this.aspectRatio = aspectRatio;
+      return this;
+    }
+
+    public Builder setDisplayOrientation(int displayOrientation) {
+      this.displayOrientation = displayOrientation;
+      return this;
+    }
+
+    public Builder setSurfaceTexture(SurfaceTexture surfaceTexture) {
+      this.surfaceTexture = surfaceTexture;
       return this;
     }
 

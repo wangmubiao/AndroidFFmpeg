@@ -12,5 +12,5 @@ public interface LivingCamera {
 
   void setFacing(int facing);
 
-  void getFacing();
+  int getFacing();
 }
