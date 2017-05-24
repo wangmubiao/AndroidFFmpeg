@@ -4,12 +4,17 @@ import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 
 import com.wlanjie.streaming.camera.AspectRatio;
+import com.wlanjie.streaming.camera.Camera21;
+import com.wlanjie.streaming.camera.Camera9;
 import com.wlanjie.streaming.camera.CameraViewImpl;
 import com.wlanjie.streaming.camera.EglCore;
+import com.wlanjie.streaming.camera.LivingCamera;
+import com.wlanjie.streaming.configuration.CameraConfiguration;
 import com.wlanjie.streaming.video.SurfaceRenderer;
 
 import java.util.Set;
@@ -26,8 +31,8 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
   private SurfaceRenderer mSurfaceRenderer;
   private SurfaceTexture mSurfaceTexture;
   private int mSurfaceTextureId;
-
-  private CameraViewImpl mImpl;
+  private LivingCamera mCamera;
+  private Context mContext;
 
   public RendererSurfaceView(Context context) {
     this(context, null);
@@ -35,17 +40,23 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
 
   public RendererSurfaceView(Context context, AttributeSet attrs) {
     super(context, attrs);
+    mContext = context;
   }
 
-  private void init(CameraViewImpl impl) {
-    mImpl = impl;
+  public void init(CameraConfiguration configuration) {
     int[] textures = new int[1];
     GLES20.glGenTextures(1, textures, 0);
     mSurfaceTextureId = textures[0];
     mSurfaceTexture = new SurfaceTexture(mSurfaceTextureId);
     mSurfaceTexture.setOnFrameAvailableListener(this);
 
-    impl.setPreviewSurface(mSurfaceTexture);
+    if (Build.VERSION.SDK_INT < 21) {
+      mCamera = new Camera9(configuration);
+    } else if (Build.VERSION.SDK_INT < 23) {
+      mCamera = new Camera21(mContext, configuration);
+    } else {
+      mCamera = new Camera21(mContext, configuration);
+    }
 
     mSurfaceRenderer = new SurfaceRenderer(new EglCore(getResources()), mSurfaceTexture, mSurfaceTextureId);
     mSurfaceRenderer.setOnSurfaceListener(this);
@@ -65,7 +76,7 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
 
       @Override
       public void surfaceDestroyed(SurfaceHolder holder) {
-        mImpl.stop();
+        mCamera.stop();
       }
     });
   }
@@ -82,9 +93,10 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
 
   @Override
   public void onSurfaceChanged(GL10 gl, int width, int height) {
-    mImpl.setSize(width, height);
-    mImpl.start();
-    mImpl.startPreview();
+//    mImpl.setSize(width, height);
+//    mImpl.start();
+//    mImpl.startPreview();
+    mCamera.start();
   }
 
   @Override
@@ -93,30 +105,30 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
   }
 
   public void setDisplayOrientation(int displayOrientation) {
-    mImpl.setDisplayOrientation(displayOrientation);
+//    mImpl.setDisplayOrientation(displayOrientation);
   }
 
-  public boolean isCameraOpened() {
-    return mImpl.isCameraOpened();
-  }
-
-  public Set<AspectRatio> getSupportAspectRatios() {
-    return mImpl.getSupportedAspectRatios();
-  }
-
-  public AspectRatio getAspectRatio() {
-    return mImpl.getAspectRatio();
-  }
-
-  public boolean getAutoFocus() {
-    return mImpl.getAutoFocus();
-  }
-
-  public int getFlash() {
-    return mImpl.getFlash();
-  }
-
-  public int getFacing() {
-    return mImpl.getFacing();
-  }
+//  public boolean isCameraOpened() {
+//    return mImpl.isCameraOpened();
+//  }
+//
+//  public Set<AspectRatio> getSupportAspectRatios() {
+//    return mImpl.getSupportedAspectRatios();
+//  }
+//
+//  public AspectRatio getAspectRatio() {
+//    return mImpl.getAspectRatio();
+//  }
+//
+//  public boolean getAutoFocus() {
+//    return mImpl.getAutoFocus();
+//  }
+//
+//  public int getFlash() {
+//    return mImpl.getFlash();
+//  }
+//
+//  public int getFacing() {
+//    return mImpl.getFacing();
+//  }
 }
