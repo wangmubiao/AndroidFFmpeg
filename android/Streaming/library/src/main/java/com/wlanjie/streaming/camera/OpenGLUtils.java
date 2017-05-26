@@ -17,7 +17,7 @@ import javax.microedition.khronos.opengles.GL10;
  * Created by wlanjie on 2016/12/14.
  */
 
-final class OpenGLUtils {
+public final class OpenGLUtils {
 
     private static final String TAG = OpenGLUtils.class.getSimpleName();
     public static final int NO_TEXTURE = -1;
@@ -35,7 +35,7 @@ final class OpenGLUtils {
         return shader;
     }
 
-    static int loadProgram(final String vertexSource, final String fragmentSource) {
+    public static int loadProgram(final String vertexSource, final String fragmentSource) {
         int vertexShader = loadShader(vertexSource, GLES20.GL_VERTEX_SHADER);
         if (vertexShader == 0) {
             Log.e(TAG, "Load Vertex Shader failed: " + GLUtils.getEGLErrorString(vertexShader));
@@ -73,7 +73,7 @@ final class OpenGLUtils {
         return texture[0];
     }
 
-    static String readSharedFromRawResource(Resources resources, int resourceId) {
+    public static String readSharedFromRawResource(Resources resources, int resourceId) {
         final InputStream inputStream = resources.openRawResource(resourceId);
         final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
         final BufferedReader bufferedReader = new BufferedReader(inputStreamReader);

@@ -66,7 +66,11 @@ public class Camera21 implements LivingCamera {
     startBackgroundThread();
     chooseCameraIdByFacing();
     collectCameraInfo();
-    startOpeningCamera();
+    try {
+      startOpeningCamera();
+    } catch (CameraAccessException e) {
+      e.printStackTrace();
+    }
   }
 
   private void startBackgroundThread() {
@@ -126,7 +130,7 @@ public class Camera21 implements LivingCamera {
     }
   }
 
-  private void startOpeningCamera() {
+  private void startOpeningCamera() throws CameraAccessException {
     mCameraManager.openCamera(mCameraId, new CameraDevice.StateCallback() {
       @Override
       public void onOpened(@NonNull CameraDevice camera) {
@@ -282,5 +286,10 @@ public class Camera21 implements LivingCamera {
   @Override
   public int getFacing() {
     return mFacing;
+  }
+
+  @Override
+  public void updateCameraConfiguration(CameraConfiguration configuration) {
+    mCameraConfiguration = configuration;
   }
 }

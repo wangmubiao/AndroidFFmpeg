@@ -1,12 +1,12 @@
 package com.wlanjie.streaming.video;
 
+import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 
-import com.wlanjie.streaming.camera.CameraViewImpl;
-import com.wlanjie.streaming.camera.EglCore;
+import com.wlanjie.streaming.camera.Effect;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -19,7 +19,7 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
 
   private SurfaceTexture mSurfaceTexture;
   private int mSurfaceTextureId;
-  private final EglCore mCore;
+  private final Effect mEffect;
   private OnSurfaceListener mOnSurfaceListener;
 
   private float[] mProjectionMatrix = new float[16];
@@ -28,8 +28,11 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
 
   private float[] mTransformMatrix = new float[16];
 
-  public SurfaceRenderer(EglCore core, SurfaceTexture texture, int surfaceTextureId) {
-    mCore = core;
+  private final RendererScreen mRendererScreen;
+
+  public SurfaceRenderer(Context context, SurfaceTexture texture, int surfaceTextureId) {
+    mRendererScreen = new RendererScreen(context);
+    mEffect = new Effect(context);
     mSurfaceTexture = texture;
     mSurfaceTextureId = surfaceTextureId;
   }
@@ -44,7 +47,8 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
 
     GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    mCore.init();
+    mEffect.init();
+    mRendererScreen.init();
   }
 
   @Override
@@ -52,9 +56,9 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     if (mOnSurfaceListener != null) {
       mOnSurfaceListener.onSurfaceChanged(gl, width, height);
     }
-    mCore.onInputSizeChanged(width, height);
+    mEffect.onInputSizeChanged(width, height);
     GLES20.glViewport(0, 0, width, height);
-    mCore.onDisplaySizeChange(width, height);
+    mEffect.onDisplaySizeChange(width, height);
 
     float outputAspectRatio = width > height ? (float) width / height : (float) height / width;
     float aspectRatio = outputAspectRatio / outputAspectRatio;
@@ -77,8 +81,9 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
 
     mSurfaceTexture.getTransformMatrix(mSurfaceMatrix);
     Matrix.multiplyMM(mTransformMatrix, 0, mSurfaceMatrix, 0, mProjectionMatrix, 0);
-    mCore.setTextureTransformMatrix(mTransformMatrix);
-    mCore.onDrawFrame(mSurfaceTextureId);
+    mEffect.setTextureTransformMatrix(mTransformMatrix);
+    int textureId = mEffect.drawToFboTexture(mSurfaceTextureId);
+    mRendererScreen.draw(textureId);
   }
 
   public void setOnSurfaceListener(OnSurfaceListener l) {

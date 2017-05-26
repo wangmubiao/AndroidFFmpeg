@@ -15,7 +15,7 @@ import java.util.SortedSet;
 public class Camera9 implements LivingCamera {
   private static final int INVALID_CAMERA_ID = -1;
 
-  private final CameraConfiguration mCameraConfiguration;
+  private CameraConfiguration mCameraConfiguration;
   private Camera.CameraInfo mCameraInfo = new Camera.CameraInfo();
   private int mFacing;
   private int mCameraId;
@@ -191,5 +191,10 @@ public class Camera9 implements LivingCamera {
   @Override
   public int getFacing() {
     return mFacing;
+  }
+
+  @Override
+  public void updateCameraConfiguration(CameraConfiguration configuration) {
+    mCameraConfiguration = configuration;
   }
 }

@@ -8,16 +8,12 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 
-import com.wlanjie.streaming.camera.AspectRatio;
 import com.wlanjie.streaming.camera.Camera21;
 import com.wlanjie.streaming.camera.Camera9;
-import com.wlanjie.streaming.camera.CameraViewImpl;
-import com.wlanjie.streaming.camera.EglCore;
+import com.wlanjie.streaming.camera.Constants;
 import com.wlanjie.streaming.camera.LivingCamera;
 import com.wlanjie.streaming.configuration.CameraConfiguration;
 import com.wlanjie.streaming.video.SurfaceRenderer;
-
-import java.util.Set;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -33,6 +29,7 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
   private int mSurfaceTextureId;
   private LivingCamera mCamera;
   private Context mContext;
+  private CameraConfiguration mCameraConfiguration;
 
   public RendererSurfaceView(Context context) {
     this(context, null);
@@ -50,6 +47,9 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
     mSurfaceTexture = new SurfaceTexture(mSurfaceTextureId);
     mSurfaceTexture.setOnFrameAvailableListener(this);
 
+    if (configuration == null) {
+      configuration = CameraConfiguration.createDefault();
+    }
     if (Build.VERSION.SDK_INT < 21) {
       mCamera = new Camera9(configuration);
     } else if (Build.VERSION.SDK_INT < 23) {
@@ -58,7 +58,7 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
       mCamera = new Camera21(mContext, configuration);
     }
 
-    mSurfaceRenderer = new SurfaceRenderer(new EglCore(getResources()), mSurfaceTexture, mSurfaceTextureId);
+    mSurfaceRenderer = new SurfaceRenderer(getContext(), mSurfaceTexture, mSurfaceTextureId);
     mSurfaceRenderer.setOnSurfaceListener(this);
     setEGLContextClientVersion(2);
     setRenderer(mSurfaceRenderer);
@@ -93,9 +93,12 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
 
   @Override
   public void onSurfaceChanged(GL10 gl, int width, int height) {
-//    mImpl.setSize(width, height);
-//    mImpl.start();
-//    mImpl.startPreview();
+    mCameraConfiguration = new CameraConfiguration.Builder()
+      .setPreview(height, width)
+      .setFacing(Constants.FACING_FRONT)
+      .setSurfaceTexture(mSurfaceTexture)
+      .build();
+    mCamera.updateCameraConfiguration(mCameraConfiguration);
     mCamera.start();
   }
 
@@ -103,32 +106,4 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
   public void onDrawFrame(GL10 gl) {
 
   }
-
-  public void setDisplayOrientation(int displayOrientation) {
-//    mImpl.setDisplayOrientation(displayOrientation);
-  }
-
-//  public boolean isCameraOpened() {
-//    return mImpl.isCameraOpened();
-//  }
-//
-//  public Set<AspectRatio> getSupportAspectRatios() {
-//    return mImpl.getSupportedAspectRatios();
-//  }
-//
-//  public AspectRatio getAspectRatio() {
-//    return mImpl.getAspectRatio();
-//  }
-//
-//  public boolean getAutoFocus() {
-//    return mImpl.getAutoFocus();
-//  }
-//
-//  public int getFlash() {
-//    return mImpl.getFlash();
-//  }
-//
-//  public int getFacing() {
-//    return mImpl.getFacing();
-//  }
 }

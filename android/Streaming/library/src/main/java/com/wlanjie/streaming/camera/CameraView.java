@@ -144,6 +144,7 @@ public class CameraView extends FrameLayout {
         mImpl.setDisplayOrientation(displayOrientation);
       }
     };
+    mGLSurfaceView.init(null);
   }
 
   public void setCameraConfiguration(CameraConfiguration configuration) {
