@@ -10,18 +10,12 @@ import com.wlanjie.streaming.R;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Created by wlanjie on 2016/12/12.
  */
 
 public final class Effect {
-
-  private static final int NO_INIT = -1;
-  private static final int NO_TEXTURE = -2;
 
   private static final float TEXTURE_NO_ROTATION[] = {
     0.0f, 1.0f,
@@ -66,11 +60,9 @@ public final class Effect {
 
   private int[] mFboId;
   private int[] mFboTextureId;
-  private IntBuffer mFboBuffer;
 
   private int[] mCubeId;
   private final FloatBuffer mCubeBuffer;
-  private int[] mTextureCoordinatedId;
   private final FloatBuffer mTextureBuffer;
 
   private int mProgramId;
@@ -79,8 +71,6 @@ public final class Effect {
   private int mTextureCoordinate;
   private int mTextureTransform;
   private float[] mTextureTransformMatrix;
-
-  private boolean mIsInitialized;
 
   private final Resources mResources;
 
@@ -113,39 +103,17 @@ public final class Effect {
   }
 
   private void onInit() {
-    initVbo();
-
     mProgramId = OpenGLUtils.loadProgram(OpenGLUtils.readSharedFromRawResource(mResources, R.raw.vertex_oes), OpenGLUtils.readSharedFromRawResource(mResources, R.raw.fragment_oes));
     mPosition = GLES20.glGetAttribLocation(mProgramId, "position");
     mUniformTexture = GLES20.glGetUniformLocation(mProgramId, "inputImageTexture");
     mTextureCoordinate = GLES20.glGetAttribLocation(mProgramId, "inputTextureCoordinate");
     mTextureTransform = GLES20.glGetUniformLocation(mProgramId, "textureTransform");
-
-    mIsInitialized = true;
-  }
-
-  private void initVbo() {
-    mCubeId = new int[1];
-    mTextureCoordinatedId = new int[1];
-
-    GLES20.glGenBuffers(1, mCubeId, 0);
-    GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mCubeId[0]);
-    GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, mCubeBuffer.capacity() * 4, mCubeBuffer, GLES20.GL_STATIC_DRAW);
-
-    GLES20.glGenBuffers(1, mTextureCoordinatedId, 0);
-    GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mTextureCoordinatedId[0]);
-    GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, mTextureBuffer.capacity() * 4, mTextureBuffer, GLES20.GL_STATIC_DRAW);
-    ;
   }
 
   private void destroyVbo() {
     if (mCubeId != null) {
       GLES20.glDeleteBuffers(1, mCubeId, 0);
       mCubeId = null;
-    }
-    if (mTextureCoordinatedId != null) {
-      GLES20.glDeleteBuffers(1, mTextureCoordinatedId, 0);
-      mTextureCoordinatedId = null;
     }
   }
 
@@ -155,7 +123,6 @@ public final class Effect {
     }
     mFboId = new int[1];
     mFboTextureId = new int[1];
-    mFboBuffer = IntBuffer.allocate(width * height);
 
     GLES20.glGenFramebuffers(1, mFboId, 0);
     GLES20.glGenTextures(1, mFboTextureId, 0);
@@ -180,23 +147,14 @@ public final class Effect {
     }
   }
 
-  public int drawToFboTexture(int textureId) {
-    if (!mIsInitialized) {
-      return NO_INIT;
-    }
-    if (mFboId == null) {
-      return NO_TEXTURE;
-    }
-
+  public int draw(int textureId) {
     GLES20.glUseProgram(mProgramId);
 
-    GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mCubeId[0]);
     GLES20.glEnableVertexAttribArray(mPosition);
-    GLES20.glVertexAttribPointer(mPosition, 2, GLES20.GL_FLOAT, false, 4 * 2, 0);
+    GLES20.glVertexAttribPointer(mPosition, 2, GLES20.GL_FLOAT, false, 4 * 2, mCubeBuffer);
 
-    GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mTextureCoordinatedId[0]);
     GLES20.glEnableVertexAttribArray(mTextureCoordinate);
-    GLES20.glVertexAttribPointer(mTextureCoordinate, 2, GLES20.GL_FLOAT, false, 4 * 2, 0);
+    GLES20.glVertexAttribPointer(mTextureCoordinate, 2, GLES20.GL_FLOAT, false, 4 * 2, mTextureBuffer);
 
     GLES20.glUniformMatrix4fv(mTextureTransform, 1, false, mTextureTransformMatrix, 0);
 
@@ -204,19 +162,15 @@ public final class Effect {
     GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId);
     GLES20.glUniform1i(mUniformTexture, 0);
 
-    GLES20.glViewport(0, 0, mInputWidth, mInputHeight);
+    GLES20.glViewport(0, 0, mDisplayWidth, mDisplayHeight);
     GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, mFboId[0]);
     GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
-    GLES20.glReadPixels(0, 0, mInputWidth, mInputHeight, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, mFboBuffer);
     GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
-    GLES20.glViewport(0, 0, mDisplayWidth, mDisplayHeight);
 
     GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, 0);
 
     GLES20.glDisableVertexAttribArray(mPosition);
     GLES20.glDisableVertexAttribArray(mTextureCoordinate);
-
-    GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 
     return mFboTextureId[0];
   }
@@ -226,7 +180,6 @@ public final class Effect {
   }
 
   final void destroy() {
-    mIsInitialized = false;
     destroyFboTexture();
     destroyVbo();
     GLES20.glDeleteProgram(mProgramId);

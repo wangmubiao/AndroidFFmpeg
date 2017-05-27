@@ -13,6 +13,8 @@ import com.wlanjie.streaming.camera.Camera9;
 import com.wlanjie.streaming.camera.Constants;
 import com.wlanjie.streaming.camera.LivingCamera;
 import com.wlanjie.streaming.configuration.CameraConfiguration;
+import com.wlanjie.streaming.configuration.VideoConfiguration;
+import com.wlanjie.streaming.video.HardEncoder;
 import com.wlanjie.streaming.video.SurfaceRenderer;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -60,6 +62,8 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
 
     mSurfaceRenderer = new SurfaceRenderer(getContext(), mSurfaceTexture, mSurfaceTextureId);
     mSurfaceRenderer.setOnSurfaceListener(this);
+
+    mSurfaceRenderer.setEncoder(new HardEncoder(VideoConfiguration.createDefault()));
     setEGLContextClientVersion(2);
     setRenderer(mSurfaceRenderer);
     setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);

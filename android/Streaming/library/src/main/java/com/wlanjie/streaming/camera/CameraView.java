@@ -519,4 +519,7 @@ public class CameraView extends FrameLayout {
     }
   }
 
+  static {
+    System.loadLibrary("wlanjie");
+  }
 }

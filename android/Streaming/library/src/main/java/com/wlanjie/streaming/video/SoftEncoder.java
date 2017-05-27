@@ -12,6 +12,26 @@ public class SoftEncoder implements Encoder {
   }
 
   @Override
+  public boolean firstTimeSetup() {
+    return false;
+  }
+
+  @Override
+  public void makeCurrent() {
+
+  }
+
+  @Override
+  public void swapBuffers() {
+
+  }
+
+  @Override
+  public void startEncoder() {
+
+  }
+
+  @Override
   public void releaseEncoder() {
 
   }

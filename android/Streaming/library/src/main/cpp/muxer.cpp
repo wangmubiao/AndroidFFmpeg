@@ -176,6 +176,7 @@ char* muxer_h264(char* frames, int frames_size, u_int32_t dts, u_int32_t pts, ch
     int ret = ERROR_SUCCESS;
 
     if (h264_raw_stream.initialize(frames, frames_size) != ERROR_SUCCESS) {
+        LOGE("h264 raw stream failed");
         return NULL;
     }
 
@@ -190,11 +191,13 @@ char* muxer_h264(char* frames, int frames_size, u_int32_t dts, u_int32_t pts, ch
         }
 
         if ((ret = muxer_sps_pps_frame(frame, frame_size, dts, pts, sps_pps, sps_pps_size)) != ERROR_SUCCESS) {
+            LOGE("muxer sps pps frame failed");
             if (ret == ERROR_H264_DUPLICATED_PPS || ret == ERROR_H264_DUPLICATED_SPS ) {
                 continue;
             }
         }
         if ((ret = muxer_ibp(frame, frame_size, dts, pts, h264, h264_size)) != ERROR_SUCCESS) {
+            LOGE("muxer ibp frame failed");
             if (ret == ERROR_H264_DROP_BEFORE_SPS_PPS) {
                 continue;
             }

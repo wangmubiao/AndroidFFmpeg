@@ -19,6 +19,7 @@
 #endif
 #define CLASS_NAME  "com/wlanjie/streaming/Encoder"
 #define SOFT_CLASS_NAME "com/wlanjie/streaming/SoftEncoder"
+#define RTMP_CLASS_NAME "com/wlanjie/streaming/rtmp/Rtmp"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -43,6 +44,7 @@ bool is_stop = false;
 void Android_JNI_startPublish(JNIEnv *env, jobject object) {
     while (!is_stop) {
         while (!q.empty()) {
+            LOGE("start Publish");
             Frame frame = q.front();
             q.pop();
             srs_rtmp_write_packet(rtmp,
@@ -75,7 +77,9 @@ void muxer_h264_success(char *data, int size, int pts) {
     char* h264 = NULL;
     int h264_size = 0;
     muxer_h264(data, size, pts, pts, &sps_pps, &sps_pps_size, &h264, &h264_size);
+    LOGE("data1 = %d, data2 = %d data3 = %d", data[0], data[1], data[2]);
     if (sps_pps != NULL && sps_pps_size > 0) {
+        LOGE("muxer h264 sps pps");
         Frame frame;
         frame.data = sps_pps;
         frame.size = sps_pps_size;
@@ -84,6 +88,7 @@ void muxer_h264_success(char *data, int size, int pts) {
         q.push(frame);
     }
     if (h264 != NULL && h264_size > 0) {
+        LOGE("muxer h264 frame");
         Frame frame;
         frame.data = h264;
         frame.size = h264_size;
@@ -227,6 +232,7 @@ int Android_JNI_write_video_sample(JNIEnv *env, jobject object, jlong timestamp,
     jsize data_size = env->GetArrayLength(frame);
 
     int ret = srs_rtmp_write_packet(rtmp, SRS_RTMP_TYPE_VIDEO, timestamp, (char *) data, data_size);
+    LOGE("write video ret = %d",  ret);
     env->ReleaseByteArrayElements(frame, data, NULL);
     return ret;
 }
@@ -290,6 +296,16 @@ static JNINativeMethod soft_encoder_methods[] = {
         { "rgbaEncodeToH264",       "([BIIZIJ)I",               (void *) Android_JNI_rgbaEncodeToH264 },
 };
 
+static JNINativeMethod rtmp_methods[] = {
+        { "startPublish",           "()V",                      (void *) Android_JNI_startPublish },
+        { "connect",                "(Ljava/lang/String;)I",    (void *) Android_JNI_connect },
+        { "writeVideo",             "(J[B)I",                   (void *) Android_JNI_write_video_sample },
+        { "writeAudio",             "(J[BII)I",                 (void *) Android_JNI_write_audio_sample },
+        { "muxerH264",              "([BII)V",                  (void *) Android_JNI_muxer_h264 },
+        { "muxerAac",               "([BII)V",                  (void *) Android_JNI_muxer_aac },
+        { "destroy",                "()V",                      (void *) Android_JNI_destroy },
+};
+
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     JNIEnv *env = NULL;
     if ((vm)->GetEnv((void **)&env, JNI_VERSION_1_6) != JNI_OK) {
@@ -301,6 +317,9 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     jclass soft_clazz = env->FindClass(SOFT_CLASS_NAME);
     env->RegisterNatives(soft_clazz, soft_encoder_methods, NELEM(soft_encoder_methods));
     env->DeleteLocalRef(soft_clazz);
+    jclass rtmp_class = env->FindClass(RTMP_CLASS_NAME);
+    env->RegisterNatives(rtmp_class, rtmp_methods, NELEM(rtmp_methods));
+    env->DeleteLocalRef(rtmp_class);
     return JNI_VERSION_1_6;
 }
 

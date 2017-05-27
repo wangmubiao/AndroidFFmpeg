@@ -29,12 +29,26 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
   private float[] mTransformMatrix = new float[16];
 
   private final RendererScreen mRendererScreen;
+  private RendererEncoder mRendererEncoder;
+  private Context mContext;
 
   public SurfaceRenderer(Context context, SurfaceTexture texture, int surfaceTextureId) {
+    mContext = context;
     mRendererScreen = new RendererScreen(context);
     mEffect = new Effect(context);
     mSurfaceTexture = texture;
     mSurfaceTextureId = surfaceTextureId;
+  }
+
+  public void setEncoder(Encoder encoder) {
+    synchronized (this) {
+      if (encoder != null) {
+        encoder.prepareEncoder();
+        mRendererEncoder = new RendererEncoder(mContext, encoder);
+      } else {
+        mRendererEncoder = null;
+      }
+    }
   }
 
   @Override
@@ -82,8 +96,12 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     mSurfaceTexture.getTransformMatrix(mSurfaceMatrix);
     Matrix.multiplyMM(mTransformMatrix, 0, mSurfaceMatrix, 0, mProjectionMatrix, 0);
     mEffect.setTextureTransformMatrix(mTransformMatrix);
-    int textureId = mEffect.drawToFboTexture(mSurfaceTextureId);
+    int textureId = mEffect.draw(mSurfaceTextureId);
     mRendererScreen.draw(textureId);
+
+    if (mRendererEncoder != null) {
+      mRendererEncoder.draw(textureId);
+    }
   }
 
   public void setOnSurfaceListener(OnSurfaceListener l) {

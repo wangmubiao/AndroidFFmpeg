@@ -2,7 +2,13 @@ package com.wlanjie.streaming.video;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.opengl.EGL14;
+import android.opengl.EGLContext;
+import android.opengl.EGLDisplay;
+import android.opengl.EGLSurface;
 import android.opengl.GLES20;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 
 import com.wlanjie.streaming.R;
 import com.wlanjie.streaming.camera.OpenGLUtils;
@@ -11,11 +17,13 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-/**
- * Created by wlanjie on 2017/5/25.
- */
+import javax.microedition.khronos.egl.EGL11;
 
-public class RendererScreen {
+/**
+ * Created by wlanjie on 2017/5/27.
+ */
+@RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+public class RendererEncoder {
 
   private static final float TEXTURE_NO_ROTATION[] = {
     0.0f, 1.0f,
@@ -62,7 +70,15 @@ public class RendererScreen {
   private int mScreenTextureCoordinate;
   private Resources mResources;
 
-  public RendererScreen(Context context) {
+  private Encoder mEncoder;
+
+  private EGLDisplay mSavedEglDisplay     = null;
+  private EGLSurface mSavedEglDrawSurface = null;
+  private EGLSurface mSavedEglReadSurface = null;
+  private EGLContext mSavedEglContext     = null;
+
+  public RendererEncoder(Context context, Encoder encoder) {
+    mEncoder = encoder;
     mResources = context.getResources();
     mCubeBuffer = ByteBuffer.allocateDirect(CUBE.length * 4)
       .order(ByteOrder.nativeOrder())
@@ -84,6 +100,14 @@ public class RendererScreen {
   }
 
   public void draw(int textureId) {
+    saveRenderState();
+    if (mEncoder.firstTimeSetup()) {
+      mEncoder.startEncoder();
+      mEncoder.makeCurrent();
+      init();
+    } else {
+      mEncoder.makeCurrent();
+    }
     GLES20.glUseProgram(mScreenProgramId);
 
     GLES20.glEnableVertexAttribArray(mScreenPosition);
@@ -103,6 +127,24 @@ public class RendererScreen {
     GLES20.glDisableVertexAttribArray(mScreenPosition);
     GLES20.glDisableVertexAttribArray(mScreenTextureCoordinate);
 
-    GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+    mEncoder.swapBuffers();
+    restoreRenderState();
+  }
+
+  private void saveRenderState() {
+    mSavedEglDisplay     = EGL14.eglGetCurrentDisplay();
+    mSavedEglDrawSurface = EGL14.eglGetCurrentSurface(EGL14.EGL_DRAW);
+    mSavedEglReadSurface = EGL14.eglGetCurrentSurface(EGL14.EGL_READ);
+    mSavedEglContext     = EGL14.eglGetCurrentContext();
+  }
+
+  private void restoreRenderState() {
+    if (!EGL14.eglMakeCurrent(
+      mSavedEglDisplay,
+      mSavedEglDrawSurface,
+      mSavedEglReadSurface,
+      mSavedEglContext)) {
+      throw new RuntimeException("eglMakeCurrent failed");
+    }
   }
 }

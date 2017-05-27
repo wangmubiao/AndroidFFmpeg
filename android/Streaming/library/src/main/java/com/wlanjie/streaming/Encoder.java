@@ -142,12 +142,12 @@ public abstract class Encoder {
 //        mBuilder.cameraView.setFacing(CameraView.FACING_FRONT);
 //        mBuilder.cameraView.start();
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                startPublish();
-            }
-        }).start();
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                startPublish();
+//            }
+//        }).start();
     }
 
     /**
@@ -384,8 +384,4 @@ public abstract class Encoder {
     protected native byte[] rgbaToI420(byte[] rgbaFrame, int width, int height, boolean flip, int rotate);
 
     protected native byte[] rgbaToNV12(byte[] rgbaFrame, int width, int height, boolean flip, int rotate);
-
-    static {
-        System.loadLibrary("wlanjie");
-    }
 }

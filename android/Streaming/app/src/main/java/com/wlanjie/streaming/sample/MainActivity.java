@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
                     .build();
                 String url = "rtmp://www.ossrs.net:1935/live/demo";
 //                String url = "rtmp://192.168.0.143/live/livestream";
-                encoder.start(url);
+//                encoder.start(url);
 //            }
 //        }, 1000);
     }
