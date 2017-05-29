@@ -93,10 +93,6 @@ public class CameraView extends FrameLayout {
   public @interface Flash {
   }
 
-  final CameraViewImpl mImpl;
-
-  private final CallbackBridge mCallbacks;
-
   private boolean mAdjustViewBounds;
 
   private final DisplayOrientationDetector mDisplayOrientationDetector;
@@ -117,15 +113,6 @@ public class CameraView extends FrameLayout {
   public CameraView(Context context, AttributeSet attrs, int defStyleAttr) {
     super(context, attrs, defStyleAttr);
 
-    mCallbacks = new CallbackBridge();
-    if (Build.VERSION.SDK_INT < 21) {
-      mImpl = new Camera1(mCallbacks);
-    } else if (Build.VERSION.SDK_INT < 23) {
-      mImpl = new Camera2(mCallbacks, context);
-    } else {
-      mImpl = new Camera2Api23(mCallbacks, context);
-    }
-
     mGLSurfaceView = new RendererSurfaceView(context);
     addView(mGLSurfaceView, new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
@@ -133,20 +120,20 @@ public class CameraView extends FrameLayout {
     TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CameraView, defStyleAttr,
       R.style.Widget_CameraView);
     mAdjustViewBounds = a.getBoolean(R.styleable.CameraView_android_adjustViewBounds, false);
-    setFacing(a.getInt(R.styleable.CameraView_facing, FACING_BACK));
-    String aspectRatio = a.getString(R.styleable.CameraView_aspectRatio);
-    if (aspectRatio != null) {
-      setAspectRatio(AspectRatio.parse(aspectRatio));
-    } else {
-      setAspectRatio(Constants.DEFAULT_ASPECT_RATIO);
-    }
-    setFlash(a.getInt(R.styleable.CameraView_flash, Constants.FLASH_AUTO));
+//    setFacing(a.getInt(R.styleable.CameraView_facing, FACING_BACK));
+//    String aspectRatio = a.getString(R.styleable.CameraView_aspectRatio);
+//    if (aspectRatio != null) {
+//      setAspectRatio(AspectRatio.parse(aspectRatio));
+//    } else {
+//      setAspectRatio(Constants.DEFAULT_ASPECT_RATIO);
+//    }
+//    setFlash(a.getInt(R.styleable.CameraView_flash, Constants.FLASH_AUTO));
     a.recycle();
     // Display orientation detector
     mDisplayOrientationDetector = new DisplayOrientationDetector(context) {
       @Override
       public void onDisplayOrientationChanged(int displayOrientation) {
-        mImpl.setDisplayOrientation(displayOrientation);
+//        mImpl.setDisplayOrientation(displayOrientation);
       }
     };
     mGLSurfaceView.init(null);
@@ -185,11 +172,6 @@ public class CameraView extends FrameLayout {
   protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
     // Handle android:adjustViewBounds
     if (mAdjustViewBounds) {
-      if (!isCameraOpened()) {
-        mCallbacks.reserveRequestLayoutOnOpen();
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        return;
-      }
       final int widthMode = MeasureSpec.getMode(widthMeasureSpec);
       final int heightMode = MeasureSpec.getMode(heightMeasureSpec);
       if (widthMode == MeasureSpec.EXACTLY && heightMode != MeasureSpec.EXACTLY) {
@@ -240,10 +222,10 @@ public class CameraView extends FrameLayout {
   @Override
   protected Parcelable onSaveInstanceState() {
     SavedState state = new SavedState(super.onSaveInstanceState());
-    state.facing = getFacing();
-    state.ratio = getAspectRatio();
-    state.autoFocus = getAutoFocus();
-    state.flash = getFlash();
+//    state.facing = getFacing();
+//    state.ratio = getAspectRatio();
+//    state.autoFocus = getAutoFocus();
+//    state.flash = getFlash();
     return state;
   }
 
@@ -255,37 +237,10 @@ public class CameraView extends FrameLayout {
     }
     SavedState ss = (SavedState) state;
     super.onRestoreInstanceState(ss.getSuperState());
-    setFacing(ss.facing);
-    setAspectRatio(ss.ratio);
+//    setFacing(ss.facing);
+//    setAspectRatio(ss.ratio);
 //        setAutoFocus(ss.autoFocus);
-    setFlash(ss.flash);
-  }
-
-  /**
-   * @return {@code true} if the camera is opened.
-   */
-  public boolean isCameraOpened() {
-    return mImpl.isCameraOpened();
-  }
-
-  /**
-   * Add a new callback.
-   *
-   * @param callback The {@link Callback} to add.
-   * @see #removeCallback(Callback)
-   */
-  public void addCallback(@NonNull Callback callback) {
-    mCallbacks.add(callback);
-  }
-
-  /**
-   * Remove a callback.
-   *
-   * @param callback The {@link Callback} to remove.
-   * @see #addCallback(Callback)
-   */
-  public void removeCallback(@NonNull Callback callback) {
-    mCallbacks.remove(callback);
+//    setFlash(ss.flash);
   }
 
   /**
@@ -310,145 +265,13 @@ public class CameraView extends FrameLayout {
   }
 
   /**
-   * Chooses camera by the direction it faces.
-   *
-   * @param facing The camera facing. Must be either {@link #FACING_BACK} or
-   *               {@link #FACING_FRONT}.
-   */
-  public void setFacing(@Facing int facing) {
-    mImpl.setFacing(facing);
-  }
-
-  /**
-   * Gets the direction that the current camera faces.
-   *
-   * @return The camera facing.
-   */
-  @Facing
-  public int getFacing() {
-    //noinspection WrongConstant
-    return mImpl.getFacing();
-  }
-
-  /**
-   * Gets all the aspect ratios supported by the current camera.
-   */
-  public Set<AspectRatio> getSupportedAspectRatios() {
-    return mImpl.getSupportedAspectRatios();
-  }
-
-  /**
-   * Sets the aspect ratio of camera.
-   *
-   * @param ratio The {@link AspectRatio} to be set.
-   */
-  public void setAspectRatio(@NonNull AspectRatio ratio) {
-    mImpl.setAspectRatio(ratio);
-  }
-
-  /**
    * Gets the current aspect ratio of camera.
    *
    * @return The current {@link AspectRatio}. Can be {@code null} if no camera is opened yet.
    */
   @Nullable
   public AspectRatio getAspectRatio() {
-    return mImpl.getAspectRatio();
-  }
-
-  /**
-   * Enables or disables the continuous auto-focus mode. When the current camera doesn't support
-   * auto-focus, calling this method will be ignored.
-   *
-   * @param autoFocus {@code true} to enable continuous auto-focus mode. {@code false} to
-   *                  disable it.
-   */
-//    public void setAutoFocus(boolean autoFocus) {
-//        mImpl.setAutoFocus(autoFocus);
-//    }
-
-  /**
-   * Returns whether the continuous auto-focus mode is enabled.
-   *
-   * @return {@code true} if the continuous auto-focus mode is enabled. {@code false} if it is
-   * disabled, or if it is not supported by the current camera.
-   */
-  public boolean getAutoFocus() {
-    return mImpl.getAutoFocus();
-  }
-
-  /**
-   * Sets the flash mode.
-   *
-   * @param flash The desired flash mode.
-   */
-  public void setFlash(@Flash int flash) {
-    mImpl.setFlash(flash);
-  }
-
-  /**
-   * Gets the current flash mode.
-   *
-   * @return The current flash mode.
-   */
-  @Flash
-  public int getFlash() {
-    //noinspection WrongConstant
-    return mImpl.getFlash();
-  }
-
-  class CallbackBridge implements CameraCallback {
-
-    private final ArrayList<Callback> mCallbacks = new ArrayList<>();
-
-    private boolean mRequestLayoutOnOpen;
-
-    CallbackBridge() {
-    }
-
-    public void add(Callback callback) {
-      mCallbacks.add(callback);
-    }
-
-    public void remove(Callback callback) {
-      mCallbacks.remove(callback);
-    }
-
-    @Override
-    public void onCameraOpened(int previewWidth, int previewHeight) {
-      if (mRequestLayoutOnOpen) {
-        mRequestLayoutOnOpen = false;
-        requestLayout();
-      }
-      for (Callback callback : mCallbacks) {
-        callback.onCameraOpened(CameraView.this, previewWidth, previewHeight);
-      }
-    }
-
-    @Override
-    public void onCameraClosed() {
-      for (Callback callback : mCallbacks) {
-        callback.onCameraClosed(CameraView.this);
-      }
-    }
-
-    @Override
-    public void onPreviewFrame(byte[] data) {
-      for (Callback callback : mCallbacks) {
-        callback.onPreviewFrame(CameraView.this, data);
-      }
-    }
-
-    @Override
-    public void onPreview(int previewWidth, int previewHeight) {
-      for (Callback callback : mCallbacks) {
-        callback.onPreviewSize(previewWidth, previewHeight);
-      }
-    }
-
-    public void reserveRequestLayoutOnOpen() {
-      mRequestLayoutOnOpen = true;
-    }
+    return Constants.DEFAULT_ASPECT_RATIO;
   }
 
   protected static class SavedState extends BaseSavedState {

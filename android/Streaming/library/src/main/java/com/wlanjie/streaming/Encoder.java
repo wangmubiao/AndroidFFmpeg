@@ -201,36 +201,36 @@ public abstract class Encoder {
      * start camera preview
      */
     private void startPreview() {
-        mBuilder.cameraView.addCallback(new CameraView.Callback() {
-
-            public void onCameraOpened(CameraView cameraView, int previewWidth, int previewHeight) {
-
-            }
-
-            /**
-             * Called when camera is closed.
-             *
-             * @param cameraView The associated {@link CameraView}.
-             */
-            public void onCameraClosed(CameraView cameraView) {
-            }
-
-            /**
-             * Called when a picture is taken.
-             *
-             * @param cameraView The associated {@link CameraView}.
-             * @param data       JPEG data.
-             */
-            public void onPreviewFrame(CameraView cameraView, byte[] data) {
-                rgbaEncoderToH264(data);
-            }
-
-            @Override
-            public void onPreviewSize(int width, int height) {
-                mBuilder.previewWidth = width;
-                mBuilder.previewHeight = height;
-            }
-        });
+//        mBuilder.cameraView.addCallback(new CameraView.Callback() {
+//
+//            public void onCameraOpened(CameraView cameraView, int previewWidth, int previewHeight) {
+//
+//            }
+//
+//            /**
+//             * Called when camera is closed.
+//             *
+//             * @param cameraView The associated {@link CameraView}.
+//             */
+//            public void onCameraClosed(CameraView cameraView) {
+//            }
+//
+//            /**
+//             * Called when a picture is taken.
+//             *
+//             * @param cameraView The associated {@link CameraView}.
+//             * @param data       JPEG data.
+//             */
+//            public void onPreviewFrame(CameraView cameraView, byte[] data) {
+//                rgbaEncoderToH264(data);
+//            }
+//
+//            @Override
+//            public void onPreviewSize(int width, int height) {
+//                mBuilder.previewWidth = width;
+//                mBuilder.previewHeight = height;
+//            }
+//        });
     }
 
     /**

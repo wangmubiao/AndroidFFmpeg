@@ -14,7 +14,9 @@ import com.wlanjie.streaming.camera.Constants;
 import com.wlanjie.streaming.camera.LivingCamera;
 import com.wlanjie.streaming.configuration.CameraConfiguration;
 import com.wlanjie.streaming.configuration.VideoConfiguration;
+import com.wlanjie.streaming.video.Encoder;
 import com.wlanjie.streaming.video.HardEncoder;
+import com.wlanjie.streaming.video.RendererEncoder;
 import com.wlanjie.streaming.video.SurfaceRenderer;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -24,7 +26,7 @@ import javax.microedition.khronos.opengles.GL10;
  * Created by wlanjie on 2017/5/22.
  */
 
-public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture.OnFrameAvailableListener, SurfaceRenderer.OnSurfaceListener {
+public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture.OnFrameAvailableListener, SurfaceRenderer.OnSurfaceListener, SurfaceRenderer.OnRendererEncoderListener {
 
   private SurfaceRenderer mSurfaceRenderer;
   private SurfaceTexture mSurfaceTexture;
@@ -32,6 +34,7 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
   private LivingCamera mCamera;
   private Context mContext;
   private CameraConfiguration mCameraConfiguration;
+  private RendererEncoder mRendererEncoder;
 
   public RendererSurfaceView(Context context) {
     this(context, null);
@@ -43,8 +46,7 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
   }
 
   public void setVideoConfiguration(VideoConfiguration configuration) {
-//    mSurfaceRenderer.setEncoder(configuration.encoder);
-    mSurfaceRenderer.setEncoder(new HardEncoder());
+//    mSurfaceRenderer.setEncoder(new HardEncoder());
   }
 
   public void init(CameraConfiguration configuration) {
@@ -67,6 +69,7 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
 
     mSurfaceRenderer = new SurfaceRenderer(getContext(), mSurfaceTexture, mSurfaceTextureId);
     mSurfaceRenderer.setOnSurfaceListener(this);
+    mSurfaceRenderer.setOnRendererEncoderListener(this);
 
     setEGLContextClientVersion(2);
     setRenderer(mSurfaceRenderer);
@@ -113,5 +116,15 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
   @Override
   public void onDrawFrame(GL10 gl) {
 
+  }
+
+  @Override
+  public void onRenderEncoder(int textureId) {
+    if (mRendererEncoder == null) {
+      Encoder encoder = new HardEncoder();
+      encoder.prepareEncoder();
+      mRendererEncoder = new RendererEncoder(getContext(), encoder);
+    }
+    mRendererEncoder.draw(textureId);
   }
 }

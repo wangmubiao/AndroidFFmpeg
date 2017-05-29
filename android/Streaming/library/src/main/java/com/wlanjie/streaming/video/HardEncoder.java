@@ -51,6 +51,9 @@ public class HardEncoder implements Encoder {
     if (mMediaCodec != null || mInputSurface != null) {
       throw new IllegalStateException("prepareEncoder already called.");
     }
+    if (mVideoConfiguration == null) {
+      mVideoConfiguration = VideoConfiguration.createDefault();
+    }
     mMediaCodec = getVideoMediaCodec(mVideoConfiguration);
     mHandlerThread = new HandlerThread("HardEncoder");
     mHandlerThread.start();

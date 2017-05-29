@@ -22,6 +22,7 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
   private int mSurfaceTextureId;
   private final Effect mEffect;
   private OnSurfaceListener mOnSurfaceListener;
+  private OnRendererEncoderListener mOnRendererEncoderListener;
 
   private float[] mProjectionMatrix = new float[16];
 
@@ -30,27 +31,12 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
   private float[] mTransformMatrix = new float[16];
 
   private final RendererScreen mRendererScreen;
-  private RendererEncoder mRendererEncoder;
-  private Context mContext;
 
   public SurfaceRenderer(Context context, SurfaceTexture texture, int surfaceTextureId) {
-    mContext = context;
     mRendererScreen = new RendererScreen(context);
     mEffect = new Effect(context);
     mSurfaceTexture = texture;
     mSurfaceTextureId = surfaceTextureId;
-  }
-
-  public void setEncoder(Encoder encoder) {
-    synchronized (this) {
-      if (encoder != null) {
-        encoder.setVideoConfiguration(VideoConfiguration.createDefault());
-        encoder.prepareEncoder();
-        mRendererEncoder = new RendererEncoder(mContext, encoder);
-      } else {
-        mRendererEncoder = null;
-      }
-    }
   }
 
   @Override
@@ -101,13 +87,17 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     int textureId = mEffect.draw(mSurfaceTextureId);
     mRendererScreen.draw(textureId);
 
-    if (mRendererEncoder != null) {
-      mRendererEncoder.draw(textureId);
+    if (mOnRendererEncoderListener != null) {
+      mOnRendererEncoderListener.onRenderEncoder(textureId);
     }
   }
 
   public void setOnSurfaceListener(OnSurfaceListener l) {
     mOnSurfaceListener = l;
+  }
+
+  public void setOnRendererEncoderListener(OnRendererEncoderListener l) {
+    mOnRendererEncoderListener = l;
   }
 
   public interface OnSurfaceListener {
@@ -116,5 +106,9 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     void onSurfaceChanged(GL10 gl, int width, int height);
 
     void onDrawFrame(GL10 gl);
+  }
+
+  public interface OnRendererEncoderListener {
+    void onRenderEncoder(int textureId);
   }
 }
