@@ -44,12 +44,16 @@ bool is_stop = false;
 void Android_JNI_startPublish(JNIEnv *env, jobject object) {
     while (!is_stop) {
         while (!q.empty()) {
-            LOGE("start Publish");
             Frame frame = q.front();
             q.pop();
-            srs_rtmp_write_packet(rtmp,
-                                  (char) (frame.packet_type == AUDIO_TYPE ? SRS_RTMP_TYPE_AUDIO : SRS_RTMP_TYPE_VIDEO),
-                                  (u_int32_t) frame.pts, frame.data, frame.size);
+//            srs_rtmp_write_packet(rtmp,
+//                                  (char) (frame.packet_type == AUDIO_TYPE ? SRS_RTMP_TYPE_AUDIO : SRS_RTMP_TYPE_VIDEO),
+//                                  (u_int32_t) frame.pts, frame.data, frame.size);
+            if (frame.packet_type == VIDEO_TYPE) {
+                int ret = srs_h264_write_raw_frames(rtmp, frame.data, frame.size, frame.pts, frame.pts);
+                LOGE("write h264 ret = %d", ret);
+            }
+            free(frame.data);
         }
         usleep(1000 * 100);
     }
@@ -232,10 +236,19 @@ int Android_JNI_write_video_sample(JNIEnv *env, jobject object, jlong timestamp,
     jsize data_size = env->GetArrayLength(frame);
 
 //    int ret = srs_rtmp_write_packet(rtmp, SRS_RTMP_TYPE_VIDEO, timestamp, (char *) data, data_size);
-    int ret = srs_h264_write_raw_frames(rtmp, (char *) data, data_size, timestamp, timestamp);
-    LOGE("write video ret = %d",  ret);
+//    int ret = srs_h264_write_raw_frames(rtmp, (char *) data, data_size, timestamp, timestamp);
+//    LOGE("write video ret = %d",  ret);
+    char *frame_data = (char *) malloc((size_t) data_size);
+    memcpy(frame_data, data, data_size);
+    Frame f;
+//    f.data = (char *) data;
+    f.data = frame_data;
+    f.size = data_size;
+    f.pts = (int) timestamp;
+    f.packet_type = VIDEO_TYPE;
+    q.push(f);
     env->ReleaseByteArrayElements(frame, data, NULL);
-    return ret;
+    return 0;
 }
 
 jint Android_JNI_write_audio_sample(JNIEnv *env, jobject object, jlong timestamp, jbyteArray frame, jint sampleRate, jint channel) {

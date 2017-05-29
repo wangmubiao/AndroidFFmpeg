@@ -159,7 +159,8 @@ public class HardEncoder implements Encoder {
         bb.limit(mBufferInfo.offset + mBufferInfo.size);
         byte[] h264 = new byte[mBufferInfo.size];
         bb.get(h264, 0, mBufferInfo.size);
-        mRtmp.muxerH264(h264, mBufferInfo.size, (int) (mBufferInfo.presentationTimeUs / 1000));
+//        mRtmp.muxerH264(h264, mBufferInfo.size, (int) (mBufferInfo.presentationTimeUs / 1000));
+        mRtmp.writeVideo((int) (mBufferInfo.presentationTimeUs / 1000), h264);
         mMediaCodec.releaseOutputBuffer(outBufferIndex, false);
       } else {
         try {
