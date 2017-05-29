@@ -7,6 +7,7 @@ import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 
 import com.wlanjie.streaming.camera.Effect;
+import com.wlanjie.streaming.configuration.VideoConfiguration;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -43,6 +44,7 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
   public void setEncoder(Encoder encoder) {
     synchronized (this) {
       if (encoder != null) {
+        encoder.setVideoConfiguration(VideoConfiguration.createDefault());
         encoder.prepareEncoder();
         mRendererEncoder = new RendererEncoder(mContext, encoder);
       } else {

@@ -21,6 +21,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
 public class HardEncoder implements Encoder {
 
+  private OnVideoEncoderListener mOnVideoEncoderListener;
   private VideoConfiguration mVideoConfiguration;
   private MediaCodec mMediaCodec;
   private InputSurface mInputSurface;
@@ -31,7 +32,17 @@ public class HardEncoder implements Encoder {
   private ReentrantLock mEncoderLock = new ReentrantLock();
   private Rtmp mRtmp = new Rtmp();
 
-  public HardEncoder(VideoConfiguration configuration) {
+  public HardEncoder() {
+
+  }
+
+  @Override
+  public void setOnVideoEncoderListener(OnVideoEncoderListener l) {
+    mOnVideoEncoderListener = l;
+  }
+
+  @Override
+  public void setVideoConfiguration(VideoConfiguration configuration) {
     mVideoConfiguration = configuration;
   }
 
@@ -45,16 +56,14 @@ public class HardEncoder implements Encoder {
     mHandlerThread.start();
     mEncoderHandler = new Handler(mHandlerThread.getLooper());
     mBufferInfo = new MediaCodec.BufferInfo();
-
-    int result = mRtmp.connect("rtmp://www.ossrs.net:1935/live/demo");
-    System.out.println("result = " + result);
-    new Thread(){
-      @Override
-      public void run() {
-        super.run();
-        mRtmp.startPublish();
-      }
-    }.start();
+    mRtmp.connect("rtmp://192.168.1.102/live/livestream");
+//    new Thread(){
+//      @Override
+//      public void run() {
+//        super.run();
+//        mRtmp.startPublish();
+//      }
+//    }.start();
   }
 
   @Override
@@ -128,6 +137,7 @@ public class HardEncoder implements Encoder {
     @Override
     public void run() {
       drainEncoder();
+      mRtmp.startPublish();
     }
   };
 
@@ -137,14 +147,16 @@ public class HardEncoder implements Encoder {
       mEncoderLock.lock();
 
       int outBufferIndex = mMediaCodec.dequeueOutputBuffer(mBufferInfo, 12000);
-      if (outBufferIndex > 0) {
+      if (outBufferIndex >= 0) {
         ByteBuffer bb = outBuffers[outBufferIndex];
+//        if (mOnVideoEncoderListener != null) {
+//          mOnVideoEncoderListener.onVideoEncode(bb, mBufferInfo);
+//        }
         bb.position(mBufferInfo.offset);
         bb.limit(mBufferInfo.offset + mBufferInfo.size);
         byte[] h264 = new byte[mBufferInfo.size];
         bb.get(h264, 0, mBufferInfo.size);
-//        mRtmp.muxerH264(h264, mBufferInfo.size, (int) (mBufferInfo.presentationTimeUs / 1000));
-        mRtmp.writeVideo(mBufferInfo.presentationTimeUs / 1000, h264);
+        mRtmp.muxerH264(h264, mBufferInfo.size, (int) (mBufferInfo.presentationTimeUs / 1000));
         mMediaCodec.releaseOutputBuffer(outBufferIndex, false);
       } else {
         try {

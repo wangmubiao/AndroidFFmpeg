@@ -21,7 +21,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 /**
- * Created by caowu15 on 2017/5/22.
+ * Created by wlanjie on 2017/5/22.
  */
 
 public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture.OnFrameAvailableListener, SurfaceRenderer.OnSurfaceListener {
@@ -40,6 +40,11 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
   public RendererSurfaceView(Context context, AttributeSet attrs) {
     super(context, attrs);
     mContext = context;
+  }
+
+  public void setVideoConfiguration(VideoConfiguration configuration) {
+//    mSurfaceRenderer.setEncoder(configuration.encoder);
+    mSurfaceRenderer.setEncoder(new HardEncoder());
   }
 
   public void init(CameraConfiguration configuration) {
@@ -63,7 +68,6 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
     mSurfaceRenderer = new SurfaceRenderer(getContext(), mSurfaceTexture, mSurfaceTextureId);
     mSurfaceRenderer.setOnSurfaceListener(this);
 
-    mSurfaceRenderer.setEncoder(new HardEncoder(VideoConfiguration.createDefault()));
     setEGLContextClientVersion(2);
     setRenderer(mSurfaceRenderer);
     setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);

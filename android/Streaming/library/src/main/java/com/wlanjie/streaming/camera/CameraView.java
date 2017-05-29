@@ -31,6 +31,9 @@ import android.widget.FrameLayout;
 
 import com.wlanjie.streaming.R;
 import com.wlanjie.streaming.configuration.CameraConfiguration;
+import com.wlanjie.streaming.configuration.VideoConfiguration;
+import com.wlanjie.streaming.video.OnVideoEncoderListener;
+import com.wlanjie.streaming.video.VideoController;
 import com.wlanjie.streaming.view.RendererSurfaceView;
 
 import java.lang.annotation.Retention;
@@ -100,6 +103,8 @@ public class CameraView extends FrameLayout {
 
   final RendererSurfaceView mGLSurfaceView;
 
+  private VideoController mVideoController = new VideoController();
+
   public CameraView(Context context) {
     this(context, null);
   }
@@ -149,6 +154,19 @@ public class CameraView extends FrameLayout {
 
   public void setCameraConfiguration(CameraConfiguration configuration) {
     mGLSurfaceView.init(configuration);
+  }
+
+  public void setOnVideoEncoderListener(OnVideoEncoderListener l) {
+//    mVideoController.setOnVideoEncoderListener(l);
+  }
+
+  public void setVideoConfiguration(VideoConfiguration configuration) {
+//    mVideoController.setVideoConfiguration(configuration);
+    mGLSurfaceView.setVideoConfiguration(configuration);
+  }
+
+  public void start(String rtmpUrl) {
+    mVideoController.start(rtmpUrl);
   }
 
   @Override
