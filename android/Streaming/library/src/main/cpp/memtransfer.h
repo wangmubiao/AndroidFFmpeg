@@ -115,6 +115,9 @@ namespace wlanjie {
         EGLImageKHR inputImage;     // ImageKHR handle for input
         EGLImageKHR outputImage;    // ImageKHR handle for output
 
+        int inputWidth;
+        int inputHeight;
+
         int outputWidth;
         int outputHeight;
 

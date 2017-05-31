@@ -7,6 +7,11 @@
 
 #include <dlfcn.h>
 #include <malloc.h>
+#include <string.h>
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
 
 #define ANDROID_GRAPHIC_BUFFER_SIZE 1024
 
@@ -105,7 +110,45 @@ void wlanjie::Memtransfer::init() {
 
 GLuint wlanjie::Memtransfer::prepareInput(int width, int height, GLenum inputPxFormat,
                                           void *inputDataPtr) {
-    return 0;
+    if (width == inputWidth && height == inputHeight) {
+        return inputTextureId;
+    }
+    inputWidth = width;
+    inputHeight = height;
+
+    glGenTextures(1, &inputTextureId);
+    // handle input pixel format
+    int nativePxFmt = HAL_PIXEL_FORMAT_RGBA_8888;
+    if (inputPixelFormat != GL_RGBA) {
+        LOGE("MemTransferAndroid", "warning: only GL_RGBA is valid as input pixel format");
+    }
+
+    // create graphic buffer
+    inputGraBufHndl = malloc(ANDROID_GRAPHIC_BUFFER_SIZE);
+    graBufCreate(inputGraBufHndl, inputWidth, inputHeight, nativePxFmt,
+                 GRALLOC_USAGE_HW_TEXTURE | GRALLOC_USAGE_SW_WRITE_OFTEN);  // is used as OpenGL texture and will be written often
+
+    // get window buffer
+    inputNativeBuf = (struct ANativeWindowBuffer *)graBufGetNativeBuffer(inputGraBufHndl);
+
+    if (!inputNativeBuf) {
+        LOGE("MemTransferAndroid", "error getting native window buffer for input");
+        return 0;
+    }
+
+    // create image for reading back the results
+    EGLint eglImgAttrs[] = { EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE, EGL_NONE };
+    inputImage = imageKHRCreate(eglGetDisplay(EGL_DEFAULT_DISPLAY),
+                                EGL_NO_CONTEXT,
+                                EGL_NATIVE_BUFFER_ANDROID,
+                                (EGLClientBuffer)inputNativeBuf,
+                                eglImgAttrs);	// or NULL as last param?
+
+    if (!inputImage) {
+        LOGE("MemTransferAndroid", "error creating image KHR for input");
+        return 0;
+    }
+    return inputTextureId;
 }
 
 GLuint wlanjie::Memtransfer::prepareOutput(int width, int height) {
@@ -158,17 +201,67 @@ void wlanjie::Memtransfer::releaseOutput() {
 }
 
 void wlanjie::Memtransfer::toGPU(const unsigned char *buf) {
+    // bind the input texture
+    glBindTexture(GL_TEXTURE_2D, inputTextureId);
 
+    // activate the image KHR for the input
+    glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, inputImage);
+
+//    Tools::checkGLErr("MemTransferAndroid", "call to glEGLImageTargetTexture2DOES() for input");
+
+    // lock the graphics buffer at graphicsPtr
+    unsigned char *graphicsPtr = (unsigned char *)lockBufferAndGetPtr(BUF_TYPE_INPUT);
+
+    // copy whole image from "buf" to "graphicsPtr"
+    memcpy(graphicsPtr, buf, (size_t) (inputWidth * inputHeight * 4));
+
+    // unlock the graphics buffer again
+    unlockBuffer(BUF_TYPE_INPUT);
 }
 
 void wlanjie::Memtransfer::fromGPU(unsigned char *buf) {
+// bind the output texture
+    glBindTexture(GL_TEXTURE_2D, outputTextureId);
 
+    // activate the image KHR for the output
+    glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, outputImage);
+
+//    Tools::checkGLErr("MemTransferAndroid", "call to glEGLImageTargetTexture2DOES() for output");
+
+    // lock the graphics buffer at graphicsPtr
+    const unsigned char *graphicsPtr = (const unsigned char *)lockBufferAndGetPtr(BUF_TYPE_OUTPUT);
+
+    // copy whole image from "graphicsPtr" to "buf"
+    memcpy(buf, graphicsPtr, (size_t) (outputWidth * outputHeight * 4));
+
+    // unlock the graphics buffer again
+    unlockBuffer(BUF_TYPE_OUTPUT);
 }
 
 void *wlanjie::Memtransfer::lockBufferAndGetPtr(wlanjie::BufType bufType) {
-    return nullptr;
+    void *hndl;
+    int usage;
+    unsigned char *memPtr;
+
+    if (bufType == BUF_TYPE_INPUT) {
+        hndl = inputGraBufHndl;
+        usage = GRALLOC_USAGE_SW_WRITE_OFTEN;
+    } else {
+        hndl = outputGraBufHndl;
+        usage = GRALLOC_USAGE_SW_READ_OFTEN;
+    }
+
+    // lock and get pointer
+    graBufLock(hndl, usage, &memPtr);
+
+    // check for valid pointer
+    if (!memPtr) {
+        LOGE("MemTransferAndroid", "GraphicBuffer lock returned invalid pointer");
+    }
+    return (void *)memPtr;
 }
 
 void wlanjie::Memtransfer::unlockBuffer(wlanjie::BufType bufType) {
-
+    void *hndl = (bufType == BUF_TYPE_INPUT) ? inputGraBufHndl : outputGraBufHndl;
+    graBufUnlock(hndl);
 }
