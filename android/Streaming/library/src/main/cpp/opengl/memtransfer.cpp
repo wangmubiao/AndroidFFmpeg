@@ -3,7 +3,7 @@
 //
 
 #include "memtransfer.h"
-#include "log.h"
+#include "../log.h"
 
 #include <dlfcn.h>
 #include <malloc.h>

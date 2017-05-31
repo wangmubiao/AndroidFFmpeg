@@ -47,6 +47,7 @@ namespace wlanjie {
 
 
     class Memtransfer {
+    public:
         virtual Memtransfer();
 
         virtual ~Memtransfer();
