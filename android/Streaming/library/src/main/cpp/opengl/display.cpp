@@ -20,6 +20,20 @@ auto fragment = "precision mediump float;\n"
         "   gl_FragColor = texture2D(inputImageTexture, textureCoordinate);\n"
         "}\n";
 
+GLfloat vertexBuffer[] = {
+        -1, -1, 0,
+        1, -1, 0,
+        -1, 1, 0,
+        1, 1, 0
+};
+
+GLfloat textureCoordinateBuffer[] = {
+        0, 0,
+        1, 0,
+        0, 1,
+        1, 1
+};
+
 wlanjie::Display::Display() {
     util = new Util();
 }
@@ -30,23 +44,22 @@ wlanjie::Display::~Display() {
 
 void wlanjie::Display::init(int width, int height) {
     glActiveTexture(GL_TEXTURE0);
-    glGenTextures(1, &textureId);
-    if (textureId == 0) {
-        return;
-    }
-    glBindTexture(GL_TEXTURE_2D, textureId);
-    glBindTexture(GL_TEXTURE_2D, textureId);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureId, 0);
-    // check status
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    glGenFramebuffers(1, &frameBufferId);
+//    glGenTextures(1, &textureId);
+//    if (textureId == 0) {
+//        return;
+//    }
+//    glBindTexture(GL_TEXTURE_2D, textureId);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_LINEAR);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_LINEAR);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//
+//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+//    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureId, 0);
+//    // check status
+//    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//
+//    glGenFramebuffers(1, &frameBufferId);
 }
 
 void wlanjie::Display::attachShaderSource(const char *vertexSource, const char *fragmentSource) {
@@ -63,16 +76,28 @@ void wlanjie::Display::attachShaderSource(const char *vertexSource, const char *
 }
 
 void wlanjie::Display::draw() {
-//    glActiveTexture(GL_TEXTURE0);
-//    glBindTexture(GL_TEXTURE_EXTERNAL_OES, textureId);
     glUseProgram(programId);
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textureId);
 
     GLint inputTextureUniform = glGetUniformLocation(programId, "inputImageTexture");
     glUniform1i(inputTextureUniform, 0);
+    GLint position = glGetAttribLocation(programId, "position");
+    glEnableVertexAttribArray((GLuint) position);
+    glVertexAttribPointer((GLuint) position, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), vertexBuffer);
+    GLint textureCoordinate = glGetAttribLocation(programId, "inputTextureCoordinate");
+    glEnableVertexAttribArray((GLuint) textureCoordinate);
+    glVertexAttribPointer((GLuint) textureCoordinate, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GL_FLOAT), textureCoordinateBuffer);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
+    glDisableVertexAttribArray((GLuint) position);
+    glDisableVertexAttribArray((GLuint) textureCoordinate);
 }
 
 void wlanjie::Display::release() {
 
+}
+
+void wlanjie::Display::setTextureId(GLuint textureId) {
+    this->textureId = textureId;
 }

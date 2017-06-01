@@ -4,6 +4,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -UNDEBUG -DGL_GLEXT_PRO
 
 file(GLOB OPENGL_SOURCE memtransfer.cpp
                         util.cpp
-                        display.cpp)
+                        display.cpp
+                        opengl.cpp
+                        effect.cpp)
 add_library(opengl STATIC ${OPENGL_SOURCE})
 target_link_libraries(opengl log dl android GLESv2 EGL)

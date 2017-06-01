@@ -20,6 +20,7 @@
 #define CLASS_NAME  "com/wlanjie/streaming/Encoder"
 #define SOFT_CLASS_NAME "com/wlanjie/streaming/SoftEncoder"
 #define RTMP_CLASS_NAME "com/wlanjie/streaming/rtmp/Rtmp"
+#define OPENGL_CLASS_NAME "com/wlanjie/streaming/OpenGL"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -281,6 +282,30 @@ void Android_JNI_destroy(JNIEnv *env, jobject object) {
     rtmp = NULL;
 }
 
+void Android_JNI_opengl_init(JNIEnv *env, jobject object, jint width, jint height) {
+
+}
+
+void Android_JNI_opengl_draw(JNIEnv *env, jobject object) {
+
+}
+
+void Android_JNI_opengl_setInputTexture(JNIEnv *env, jobject object, jint textureId) {
+
+}
+
+void Android_JNI_opengl_setInputPixels(JNIEnv *env, jobject object, jintArray pixels) {
+
+}
+
+jobject Android_JNI_opengl_getOutputPixels(JNIEnv *env, jobject object) {
+    return NULL;
+}
+
+void Android_JNI_opengl_release(JNIEnv *env, jobject object) {
+
+}
+
 static JNINativeMethod encoder_methods[] = {
         { "startPublish",           "()V",                      (void *) Android_JNI_startPublish },
         { "setEncoderResolution",   "(II)V",                    (void *) Android_JNI_setEncoderResolution },
@@ -320,6 +345,15 @@ static JNINativeMethod rtmp_methods[] = {
         { "destroy",                "()V",                      (void *) Android_JNI_destroy },
 };
 
+static JNINativeMethod opengl_methods[] = {
+        { "init",                   "(II)V",                    (void *) Android_JNI_opengl_init },
+        { "draw",                   "()V",                      (void *) Android_JNI_opengl_draw },
+        { "setInputTexture",        "(I)V",                     (void *) Android_JNI_opengl_setInputTexture },
+        { "setInputPixels",         "([I)V",                    (void *) Android_JNI_opengl_setInputPixels },
+        { "setInputPixels",         "()Ljava/nio/ByteBuffer;",  (void *) Android_JNI_opengl_getOutputPixels },
+        { "release",                "()V",                      (void *) Android_JNI_opengl_release },
+};
+
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     JNIEnv *env = NULL;
     if ((vm)->GetEnv((void **)&env, JNI_VERSION_1_6) != JNI_OK) {
@@ -334,6 +368,9 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     jclass rtmp_class = env->FindClass(RTMP_CLASS_NAME);
     env->RegisterNatives(rtmp_class, rtmp_methods, NELEM(rtmp_methods));
     env->DeleteLocalRef(rtmp_class);
+    jclass opengl_class = env->FindClass(OPENGL_CLASS_NAME);
+    env->RegisterNatives(opengl_class, opengl_methods, NELEM(opengl_methods));
+    env->DeleteLocalRef(opengl_class);
     return JNI_VERSION_1_6;
 }
 

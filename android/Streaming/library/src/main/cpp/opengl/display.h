@@ -21,6 +21,8 @@ namespace wlanjie {
 
         virtual void attachShaderSource(const char *vertexSource = NULL, const char *fragmentSource = NULL);
 
+        virtual void setTextureId(GLuint textureId);
+
         virtual void draw();
 
         virtual void release();

@@ -1,0 +1,32 @@
+//
+// Created by wlanjie on 2017/6/1.
+//
+
+#ifndef STREAMING_OPENGL_H
+#define STREAMING_OPENGL_H
+
+#include <stdint.h>
+
+namespace wlanjie {
+
+    class OpenGL {
+
+    public:
+        OpenGL();
+
+        ~OpenGL();
+
+        void init(int width, int height);
+
+        void draw();
+
+        void setInputPixels(uint8_t *data);
+
+        void setInputTexture(int textureId);
+
+        void release();
+    };
+
+}
+
+#endif //STREAMING_OPENGL_H

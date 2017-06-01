@@ -168,7 +168,7 @@ GLuint wlanjie::Memtransfer::prepareOutput(int width, int height) {
     outputGraBufHndl = malloc(ANDROID_GRAPHIC_BUFFER_SIZE);
     graBufCreate(outputGraBufHndl, (uint32_t) width, (uint32_t) height, HAL_PIXEL_FORMAT_RGB_888, GRALLOC_USAGE_HW_RENDER | GRALLOC_USAGE_SW_READ_OFTEN);
     outputNativeBuf = (struct ANativeWindowBuffer *) graBufGetNativeBuffer(outputGraBufHndl);
-    return 0;
+    return outputTextureId;
 }
 
 void wlanjie::Memtransfer::releaseInput() {
