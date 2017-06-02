@@ -13,6 +13,7 @@
 #include "log.h"
 #include "VideoEncode.h"
 #include "AudioEncode.h"
+#include "opengl/opengl.h"
 
 #ifndef NELEM
 #define NELEM(x) ((int) (sizeof(x) / sizeof((x)[0])))
@@ -34,6 +35,8 @@ struct Frame {
     int packet_type;
     int pts;
 };
+
+wlanjie::OpenGL *openGL;
 
 std::queue<Frame> q;
 
@@ -283,27 +286,29 @@ void Android_JNI_destroy(JNIEnv *env, jobject object) {
 }
 
 void Android_JNI_opengl_init(JNIEnv *env, jobject object, jint width, jint height) {
-
+    openGL->init(width, height);
 }
 
 void Android_JNI_opengl_draw(JNIEnv *env, jobject object) {
-
+    openGL->draw();
 }
 
 void Android_JNI_opengl_setInputTexture(JNIEnv *env, jobject object, jint textureId) {
-
+    openGL->setInputTexture(textureId);
 }
 
-void Android_JNI_opengl_setInputPixels(JNIEnv *env, jobject object, jintArray pixels) {
-
+void Android_JNI_opengl_setInputPixels(JNIEnv *env, jobject object, jbyteArray pixels) {
+    jbyte *data =  env->GetByteArrayElements(pixels, JNI_FALSE);
+    openGL->setInputPixels((uint8_t *) data);
 }
 
 jobject Android_JNI_opengl_getOutputPixels(JNIEnv *env, jobject object) {
+//    openGL
     return NULL;
 }
 
 void Android_JNI_opengl_release(JNIEnv *env, jobject object) {
-
+    openGL->release();
 }
 
 static JNINativeMethod encoder_methods[] = {
@@ -349,8 +354,8 @@ static JNINativeMethod opengl_methods[] = {
         { "init",                   "(II)V",                    (void *) Android_JNI_opengl_init },
         { "draw",                   "()V",                      (void *) Android_JNI_opengl_draw },
         { "setInputTexture",        "(I)V",                     (void *) Android_JNI_opengl_setInputTexture },
-        { "setInputPixels",         "([I)V",                    (void *) Android_JNI_opengl_setInputPixels },
-        { "setInputPixels",         "()Ljava/nio/ByteBuffer;",  (void *) Android_JNI_opengl_getOutputPixels },
+        { "setInputPixels",         "([B)V",                    (void *) Android_JNI_opengl_setInputPixels },
+        { "getOutputPixels",        "()Ljava/nio/ByteBuffer;",  (void *) Android_JNI_opengl_getOutputPixels },
         { "release",                "()V",                      (void *) Android_JNI_opengl_release },
 };
 
@@ -359,6 +364,9 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     if ((vm)->GetEnv((void **)&env, JNI_VERSION_1_6) != JNI_OK) {
         return JNI_FALSE;
     }
+
+    openGL = new wlanjie::OpenGL();
+
     jclass clazz = env->FindClass(CLASS_NAME);
     env->RegisterNatives(clazz, encoder_methods, NELEM(encoder_methods));
     env->DeleteLocalRef(clazz);
@@ -375,6 +383,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
 }
 
 JNIEXPORT void JNI_OnUnload(JavaVM *vm, void *reserved) {
+    delete openGL;
 }
 
 #ifdef __cplusplus

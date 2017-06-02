@@ -6,6 +6,8 @@
 #define STREAMING_OPENGL_H
 
 #include <stdint.h>
+#include "effect.h"
+#include "display.h"
 
 namespace wlanjie {
 
@@ -25,6 +27,10 @@ namespace wlanjie {
         void setInputTexture(int textureId);
 
         void release();
+
+    private:
+        Effect *effect;
+        Display *display;
     };
 
 }

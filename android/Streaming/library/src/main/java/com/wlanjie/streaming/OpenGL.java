@@ -14,7 +14,7 @@ public class OpenGL {
 
   public native void setInputTexture(int textureId);
 
-  public native void setInputPixels(int[] pixels);
+  public native void setInputPixels(byte[] pixels);
 
   public native ByteBuffer getOutputPixels();
 

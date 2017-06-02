@@ -12,9 +12,9 @@ namespace wlanjie {
     class Display {
 
     public:
-        virtual Display();
+        Display();
 
-        virtual ~Display();
+        ~Display();
 
     public:
         virtual void init(int width, int height);

@@ -60,4 +60,9 @@ set(RTMP_LIB_DIR ${CMAKE_CURRENT_BINARY_DIR}/rtmp)
 add_library(RTMP STATIC IMPORTED)
 set_target_properties(RTMP PROPERTIES IMPORTED_LOCATION ${RTMP_LIB_DIR}/librtmp.a)
 
-target_link_libraries(wlanjie YUV_LIB X264 AAC RTMP android log dl m z GLESv1_CM GLESv2)
+#link opengl library
+set(OPENGL_LIB_DIR ${CMAKE_CURRENT_BINARY_DIR}/opengl)
+add_library(OPENGL STATIC IMPORTED)
+set_target_properties(OPENGL PROPERTIES IMPORTED_LOCATION ${OPENGL_LIB_DIR}/libopengl.a)
+
+target_link_libraries(wlanjie OPENGL YUV_LIB X264 AAC RTMP android log dl m z GLESv1_CM GLESv2 EGL)

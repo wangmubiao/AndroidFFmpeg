@@ -6,6 +6,7 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 
+import com.wlanjie.streaming.OpenGL;
 import com.wlanjie.streaming.camera.Effect;
 import com.wlanjie.streaming.configuration.VideoConfiguration;
 
@@ -31,6 +32,12 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
   private float[] mTransformMatrix = new float[16];
 
   private final RendererScreen mRendererScreen;
+
+  private OpenGL mOpenGL = new OpenGL();
+
+  private EglCore mEglCore = new EglCore();
+
+  private WindowSurface mWindowSurface;
 
   public SurfaceRenderer(Context context, SurfaceTexture texture, int surfaceTextureId) {
     mRendererScreen = new RendererScreen(context);
@@ -58,6 +65,11 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     if (mOnSurfaceListener != null) {
       mOnSurfaceListener.onSurfaceChanged(gl, width, height);
     }
+
+    mWindowSurface = new WindowSurface(mEglCore, mSurfaceTexture);
+    mWindowSurface.makeCurrent();
+
+    mOpenGL.init(width, height);
     mEffect.onInputSizeChanged(width, height);
     GLES20.glViewport(0, 0, width, height);
     mEffect.onDisplaySizeChange(width, height);
@@ -84,12 +96,16 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     mSurfaceTexture.getTransformMatrix(mSurfaceMatrix);
     Matrix.multiplyMM(mTransformMatrix, 0, mSurfaceMatrix, 0, mProjectionMatrix, 0);
     mEffect.setTextureTransformMatrix(mTransformMatrix);
-    int textureId = mEffect.draw(mSurfaceTextureId);
-    mRendererScreen.draw(textureId);
+//    int textureId = mEffect.draw(mSurfaceTextureId);
+//    mRendererScreen.draw(textureId);
 
-    if (mOnRendererEncoderListener != null) {
-      mOnRendererEncoderListener.onRenderEncoder(textureId);
-    }
+    mOpenGL.setInputTexture(mSurfaceTextureId);
+    mOpenGL.draw();
+    mWindowSurface.swapBuffers();
+
+//    if (mOnRendererEncoderListener != null) {
+//      mOnRendererEncoderListener.onRenderEncoder(textureId);
+//    }
   }
 
   public void setOnSurfaceListener(OnSurfaceListener l) {

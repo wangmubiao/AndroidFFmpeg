@@ -162,12 +162,20 @@ GLuint wlanjie::Memtransfer::prepareOutput(int width, int height) {
     if (outputTextureId <= 0) {
         return 0;
     }
+    glBindTexture(GL_TEXTURE_2D, outputTextureId);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     outputGraBufHndl = malloc(ANDROID_GRAPHIC_BUFFER_SIZE);
     graBufCreate(outputGraBufHndl, (uint32_t) width, (uint32_t) height, HAL_PIXEL_FORMAT_RGB_888, GRALLOC_USAGE_HW_RENDER | GRALLOC_USAGE_SW_READ_OFTEN);
     outputNativeBuf = (struct ANativeWindowBuffer *) graBufGetNativeBuffer(outputGraBufHndl);
+    EGLint eglImgAttrs[] = { EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE, EGL_NONE };
+    outputImage = imageKHRCreate(eglGetDisplay(EGL_DEFAULT_DISPLAY),
+                                 EGL_NO_CONTEXT,
+                                 EGL_NATIVE_BUFFER_ANDROID,
+                                 (EGLClientBuffer)outputNativeBuf,
+                                 eglImgAttrs);	// or NULL as last param?
+
     return outputTextureId;
 }
 
