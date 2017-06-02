@@ -52,7 +52,7 @@ namespace wlanjie {
 
         ~Memtransfer();
 
-        virtual void init();
+        virtual bool init();
 
         /**
          * Prepare for input frames of size <width>x<height>. Return a texture id for the input frames.

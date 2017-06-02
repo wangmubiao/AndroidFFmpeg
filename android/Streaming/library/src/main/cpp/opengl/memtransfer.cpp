@@ -18,33 +18,33 @@
 
 enum {
     /* buffer is never read in software */
-    GRALLOC_USAGE_SW_READ_NEVER   = 0x00000000,
+            GRALLOC_USAGE_SW_READ_NEVER   = 0x00000000,
     /* buffer is rarely read in software */
-    GRALLOC_USAGE_SW_READ_RARELY  = 0x00000002,
+            GRALLOC_USAGE_SW_READ_RARELY  = 0x00000002,
     /* buffer is often read in software */
-    GRALLOC_USAGE_SW_READ_OFTEN   = 0x00000003,
+            GRALLOC_USAGE_SW_READ_OFTEN   = 0x00000003,
     /* mask for the software read values */
-    GRALLOC_USAGE_SW_READ_MASK    = 0x0000000F,
+            GRALLOC_USAGE_SW_READ_MASK    = 0x0000000F,
 
     /* buffer is never written in software */
-    GRALLOC_USAGE_SW_WRITE_NEVER  = 0x00000000,
+            GRALLOC_USAGE_SW_WRITE_NEVER  = 0x00000000,
     /* buffer is never written in software */
-    GRALLOC_USAGE_SW_WRITE_RARELY = 0x00000020,
+            GRALLOC_USAGE_SW_WRITE_RARELY = 0x00000020,
     /* buffer is never written in software */
-    GRALLOC_USAGE_SW_WRITE_OFTEN  = 0x00000030,
+            GRALLOC_USAGE_SW_WRITE_OFTEN  = 0x00000030,
     /* mask for the software write values */
-    GRALLOC_USAGE_SW_WRITE_MASK   = 0x000000F0,
+            GRALLOC_USAGE_SW_WRITE_MASK   = 0x000000F0,
 
     /* buffer will be used as an OpenGL ES texture */
-    GRALLOC_USAGE_HW_TEXTURE      = 0x00000100,
+            GRALLOC_USAGE_HW_TEXTURE      = 0x00000100,
     /* buffer will be used as an OpenGL ES render target */
-    GRALLOC_USAGE_HW_RENDER       = 0x00000200,
+            GRALLOC_USAGE_HW_RENDER       = 0x00000200,
     /* buffer will be used by the 2D hardware blitter */
-    GRALLOC_USAGE_HW_2D           = 0x00000400,
+            GRALLOC_USAGE_HW_2D           = 0x00000400,
     /* buffer will be used with the framebuffer device */
-    GRALLOC_USAGE_HW_FB           = 0x00001000,
+            GRALLOC_USAGE_HW_FB           = 0x00001000,
     /* mask for the software usage bit-mask */
-    GRALLOC_USAGE_HW_MASK         = 0x00001F00,
+            GRALLOC_USAGE_HW_MASK         = 0x00001F00,
 };
 
 enum {
@@ -57,9 +57,8 @@ enum {
     HAL_PIXEL_FORMAT_RGBA_4444          = 7,
 };
 
-
 #define DL_FUNC(hndl, fn, type) (type)dlsym(hndl, fn)
-#define DL_FUNC_CHECK(hndl, fn_ptr, fn) if (!fn_ptr) { LOGE("could not dynamically link func '%s': %s", fn, dlerror()); dlclose(hndl); }
+#define DL_FUNC_CHECK(hndl, fn_ptr, fn) if (!fn_ptr) { LOGE("MemTransferAndroid", "could not dynamically link func '%s': %s", fn, dlerror()); dlclose(hndl); return false; }
 
 wlanjie::GraphicBufferFnCtor wlanjie::Memtransfer::graBufCreate = NULL;
 wlanjie::GraphicBufferFnDtor wlanjie::Memtransfer::graBufDestroy = NULL;
@@ -78,34 +77,43 @@ wlanjie::Memtransfer::~Memtransfer() {
     releaseOutput();
 }
 
-void wlanjie::Memtransfer::init() {
-    void *dlEGLHndl = dlopen("libEGL.so", RTLD_LAZY);
-    if (!dlEGLHndl) {
-        return;
+bool wlanjie::Memtransfer::init() {
+    void *dlEGLhndl = dlopen("libEGL.so", RTLD_LAZY);
+    if (!dlEGLhndl) {
+        return false;
     }
-    imageKHRCreate = DL_FUNC(dlEGLHndl, "eglCreateImageKHR", EGLExtFnCreateImage);
-    DL_FUNC_CHECK(dlEGLHndl, imageKHRCreate, "eglCreateImageKHR");
 
-    imageKHRDestroy= DL_FUNC(dlEGLHndl, "eglDestroyImageKHR", EGLExtFnDestroyImage);
-    DL_FUNC_CHECK(dlEGLHndl, imageKHRDestroy, "eglDestroyImageKHR");
+    imageKHRCreate = DL_FUNC(dlEGLhndl, "eglCreateImageKHR", EGLExtFnCreateImage);
+    DL_FUNC_CHECK(dlEGLhndl, imageKHRCreate, "eglCreateImageKHR");
 
-    dlclose(dlEGLHndl);
+    imageKHRDestroy = DL_FUNC(dlEGLhndl, "eglDestroyImageKHR", EGLExtFnDestroyImage);
+    DL_FUNC_CHECK(dlEGLhndl, imageKHRDestroy, "eglDestroyImageKHR");
 
-    void *dlUIHndl = dlopen("libui.so", RTLD_LAZY);
-    if (!dlUIHndl) {
-        return;
+    dlclose(dlEGLhndl);
+
+    // load necessary Android GraphicBuffer functions
+    void *dlUIhndl = dlopen("libui.so", RTLD_LAZY);
+    if (!dlUIhndl) {
+        return false;
     }
-    graBufCreate = DL_FUNC(dlUIHndl, "_ZN7android13GraphicBufferC1Ejjij", GraphicBufferFnCtor);
-    DL_FUNC_CHECK(dlUIHndl, graBufCreate, "_ZN7android13GraphicBufferC1Ejjij");
-    graBufDestroy = DL_FUNC(dlUIHndl, "_ZN7android13GraphicBufferD1Ev", GraphicBufferFnDtor);
-    DL_FUNC_CHECK(dlUIHndl, graBufDestroy, "_ZN7android13GraphicBufferD1Ev");
-    graBufGetNativeBuffer = DL_FUNC(dlUIHndl, "_ZNK7android13GraphicBuffer15getNativeBufferEv", GraphicBufferFnGetNativeBuffer);
-    DL_FUNC_CHECK(dlUIHndl, graBufGetNativeBuffer, "_ZNK7android13GraphicBuffer15getNativeBufferEv");
-    graBufLock = DL_FUNC(dlUIHndl, "_ZN7android13GraphicBuffer4lockEjPPv", GraphicBufferFnLock);
-    DL_FUNC_CHECK(dlUIHndl, graBufLock, "_ZN7android13GraphicBuffer4lockEjPPv");
-    graBufUnlock = DL_FUNC(dlUIHndl, "_ZN7android13GraphicBuffer6unlockEv", GraphicBufferFnUnlock);
-    DL_FUNC_CHECK(dlUIHndl, graBufUnlock, "_ZN7android13GraphicBuffer6unlockEv");
-    dlclose(dlUIHndl);
+
+    graBufCreate = DL_FUNC(dlUIhndl, "_ZN7android13GraphicBufferC1Ejjij", GraphicBufferFnCtor);
+    DL_FUNC_CHECK(dlUIhndl, graBufCreate, "_ZN7android13GraphicBufferC1Ejjij");
+
+    graBufDestroy = DL_FUNC(dlUIhndl, "_ZN7android13GraphicBufferD1Ev", GraphicBufferFnDtor);
+    DL_FUNC_CHECK(dlUIhndl, graBufDestroy, "_ZN7android13GraphicBufferD1Ev");
+
+    graBufGetNativeBuffer = DL_FUNC(dlUIhndl, "_ZNK7android13GraphicBuffer15getNativeBufferEv", GraphicBufferFnGetNativeBuffer);
+    DL_FUNC_CHECK(dlUIhndl, graBufGetNativeBuffer, "_ZNK7android13GraphicBuffer15getNativeBufferEv");
+
+    graBufLock = DL_FUNC(dlUIhndl, "_ZN7android13GraphicBuffer4lockEjPPv", GraphicBufferFnLock);
+    DL_FUNC_CHECK(dlUIhndl, graBufLock, "_ZN7android13GraphicBuffer4lockEjPPv");
+
+    graBufUnlock = DL_FUNC(dlUIhndl, "_ZN7android13GraphicBuffer6unlockEv", GraphicBufferFnUnlock);
+    DL_FUNC_CHECK(dlUIhndl, graBufUnlock, "_ZN7android13GraphicBuffer6unlockEv");
+
+    dlclose(dlUIhndl);
+    return true;
 }
 
 GLuint wlanjie::Memtransfer::prepareInput(int width, int height, GLenum inputPxFormat,

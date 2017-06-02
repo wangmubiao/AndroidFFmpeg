@@ -4,6 +4,7 @@
 
 #include <GLES2/gl2ext.h>
 #include "effect.h"
+#include "../log.h"
 
 auto effectVertex = "attribute vec4 position;\n"
         "attribute vec4 inputTextureCoordinate;\n"
@@ -48,6 +49,7 @@ void wlanjie::Effect::init(int width, int height) {
     glGenFramebuffers(1, &frameBufferId);
     glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
     glActiveTexture(GL_TEXTURE0);
+    memtransfer->init();
     outputTextureId = memtransfer->prepareOutput(width, height);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -56,6 +58,7 @@ void wlanjie::Effect::init(int width, int height) {
 }
 
 void wlanjie::Effect::draw() {
+    LOGE("effect draw");
     glUseProgram(programId);
     GLint uniform = glGetUniformLocation(programId, "inputImageTexture");
     glUniform1i(uniform, 0);

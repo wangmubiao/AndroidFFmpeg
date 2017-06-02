@@ -4,6 +4,7 @@
 
 #include <GLES2/gl2ext.h>
 #include "display.h"
+#include "../log.h"
 
 auto vertex = "attribute vec4 position;\n"
         "attribute vec2 inputTextureCoordinate;\n"
@@ -76,6 +77,7 @@ void wlanjie::Display::attachShaderSource(const char *vertexSource, const char *
 }
 
 void wlanjie::Display::draw() {
+    LOGE("display draw");
     glUseProgram(programId);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textureId);
