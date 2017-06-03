@@ -12,15 +12,14 @@
 #include "srs_librtmp.hpp"
 #include "muxer.h"
 #include "log.h"
-#include "VideoEncode.h"
-#include "AudioEncode.h"
+#include "videoencoder.h"
+#include "audioencoder.h"
 #include "opengl/opengl.h"
 
 #ifndef NELEM
 #define NELEM(x) ((int) (sizeof(x) / sizeof((x)[0])))
 #endif
-#define CLASS_NAME  "com/wlanjie/streaming/Encoder"
-#define SOFT_CLASS_NAME "com/wlanjie/streaming/SoftEncoder"
+#define SOFT_CLASS_NAME "com/wlanjie/streaming/video/SoftEncoder"
 #define RTMP_CLASS_NAME "com/wlanjie/streaming/rtmp/Rtmp"
 #define OPENGL_CLASS_NAME "com/wlanjie/streaming/OpenGL"
 #ifdef __cplusplus
@@ -41,7 +40,7 @@ wlanjie::OpenGL *openGL;
 
 std::queue<Frame> q;
 
-VideoEncode videoEncode;
+wlanjie::VideoEncode videoEncode;
 AudioEncode audioEncode;
 srs_rtmp_t rtmp;
 bool is_stop = false;
@@ -197,6 +196,29 @@ jint Android_JNI_rgbaEncodeToH264(JNIEnv* env, jobject object, jbyteArray rgba_f
     return 0;
 }
 
+void Android_JNI_encoderH264(JNIEnv *env, jobject object) {
+    unsigned char *buffer = openGL->getBuffer();
+
+    int width = openGL->getWidth();
+    int height = openGL->getHeight();
+    int ySize = openGL->getWidth() * openGL->getHeight();
+    uint8_t *data = (uint8_t *) malloc((size_t) (ySize * 3 / 2));
+    uint8_t *u = data + ySize;
+    uint8_t *v = u + ySize / 4;
+    libyuv::ConvertToI420(buffer, ySize, data, width, u, width / 2, v, width / 2, 0, 0, width, height, width, height, libyuv::kRotate0, libyuv::FOURCC_BPP_RGBA);
+    int size = videoEncode.x264_encode(data, u, v, width);
+    uint8_t *h264 = videoEncode.get_h264();
+
+    char *frame_data = (char *) malloc((size_t) size);
+    memcpy(frame_data, h264, size);
+    Frame f;
+    f.data = frame_data;
+    f.size = size;
+    f.pts = (int) time(NULL) / 1000;
+    f.packet_type = VIDEO_TYPE;
+    q.push(f);
+}
+
 jboolean Android_JNI_openAacEncode(JNIEnv *env, jobject object, jint channels, jint sample_rate, jint bitrate) {
     return (jboolean) audioEncode.open_aac_encode(channels, sample_rate, bitrate);
 }
@@ -246,7 +268,6 @@ int Android_JNI_write_video_sample(JNIEnv *env, jobject object, jlong timestamp,
     char *frame_data = (char *) malloc((size_t) data_size);
     memcpy(frame_data, data, data_size);
     Frame f;
-//    f.data = (char *) data;
     f.data = frame_data;
     f.size = data_size;
     f.pts = (int) timestamp;
@@ -287,6 +308,12 @@ void Android_JNI_destroy(JNIEnv *env, jobject object) {
 }
 
 void Android_JNI_opengl_init(JNIEnv *env, jobject object, jint width, jint height) {
+    videoEncode.setEncodeResolution(width, height);
+    videoEncode.setEncodeGop(2 * 24);
+    videoEncode.setEncodeFps(24);
+    videoEncode.setEncodeBitrate(800 * 1000);
+//    videoEncode.setEncodePreset("veryfast");
+
     openGL->init(width, height);
     Android_JNI_openH264Encoder(env, object);
 }
@@ -337,17 +364,18 @@ static JNINativeMethod encoder_methods[] = {
 };
 
 static JNINativeMethod soft_encoder_methods[] = {
-        { "setEncoderFps",          "(I)V",                     (void *) Android_JNI_setEncoderFps },
-        { "setEncoderGop",          "(I)V",                     (void *) Android_JNI_setEncoderGop },
-        { "setEncoderBitrate",      "(I)V",                     (void *) Android_JNI_setEncoderBitrate },
-        { "setEncoderPreset",       "(Ljava/lang/String;)V",    (void *) Android_JNI_setEncoderPreset },
-        { "openH264Encoder",        "()Z",                      (void *) Android_JNI_openH264Encoder },
+//        { "setEncoderFps",          "(I)V",                     (void *) Android_JNI_setEncoderFps },
+//        { "setEncoderGop",          "(I)V",                     (void *) Android_JNI_setEncoderGop },
+//        { "setEncoderBitrate",      "(I)V",                     (void *) Android_JNI_setEncoderBitrate },
+//        { "setEncoderPreset",       "(Ljava/lang/String;)V",    (void *) Android_JNI_setEncoderPreset },
+        { "openH264Encoder",        "()V",                      (void *) Android_JNI_openH264Encoder },
         { "closeH264Encoder",       "()V",                      (void *) Android_JNI_closeH264Encoder },
-        { "openAacEncoder",         "(III)Z",                   (void *) Android_JNI_openAacEncode },
-        { "encoderPcmToAac",        "([BI)I",                   (void *) Android_JNI_encoderPcmToAac },
-        { "closeAacEncoder",        "()V",                      (void *) Android_JNI_closeAacEncoder },
-        { "NV21EncodeToH264",       "([BIIZIJ)I",               (void *) Android_JNI_NV21EncodeToH264 },
-        { "rgbaEncodeToH264",       "([BIIZIJ)I",               (void *) Android_JNI_rgbaEncodeToH264 },
+        { "encoderH264",            "()V",                      (void *) Android_JNI_encoderH264 }
+//        { "openAacEncoder",         "(III)Z",                   (void *) Android_JNI_openAacEncode },
+//        { "encoderPcmToAac",        "([BI)I",                   (void *) Android_JNI_encoderPcmToAac },
+//        { "closeAacEncoder",        "()V",                      (void *) Android_JNI_closeAacEncoder },
+//        { "NV21EncodeToH264",       "([BIIZIJ)I",               (void *) Android_JNI_NV21EncodeToH264 },
+//        { "rgbaEncodeToH264",       "([BIIZIJ)I",               (void *) Android_JNI_rgbaEncodeToH264 },
 };
 
 static JNINativeMethod rtmp_methods[] = {
@@ -378,9 +406,9 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
 
     openGL = new wlanjie::OpenGL();
 
-    jclass clazz = env->FindClass(CLASS_NAME);
-    env->RegisterNatives(clazz, encoder_methods, NELEM(encoder_methods));
-    env->DeleteLocalRef(clazz);
+//    jclass clazz = env->FindClass(CLASS_NAME);
+//    env->RegisterNatives(clazz, encoder_methods, NELEM(encoder_methods));
+//    env->DeleteLocalRef(clazz);
     jclass soft_clazz = env->FindClass(SOFT_CLASS_NAME);
     env->RegisterNatives(soft_clazz, soft_encoder_methods, NELEM(soft_encoder_methods));
     env->DeleteLocalRef(soft_clazz);

@@ -17,6 +17,7 @@ import com.wlanjie.streaming.configuration.VideoConfiguration;
 import com.wlanjie.streaming.video.Encoder;
 import com.wlanjie.streaming.video.HardEncoder;
 import com.wlanjie.streaming.video.RendererEncoder;
+import com.wlanjie.streaming.video.SoftEncoder;
 import com.wlanjie.streaming.video.SurfaceRenderer;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -35,6 +36,7 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
   private Context mContext;
   private CameraConfiguration mCameraConfiguration;
   private RendererEncoder mRendererEncoder;
+  private Encoder mEncoder;
 
   public RendererSurfaceView(Context context) {
     this(context, null);
@@ -120,11 +122,17 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
 
   @Override
   public void onRenderEncoder(int textureId) {
-    if (mRendererEncoder == null) {
-      Encoder encoder = new HardEncoder();
-      encoder.prepareEncoder();
-      mRendererEncoder = new RendererEncoder(getContext(), encoder);
+//    if (mRendererEncoder == null) {
+//      Encoder encoder = new HardEncoder();
+//      encoder.prepareEncoder();
+//      mRendererEncoder = new RendererEncoder(getContext(), encoder);
+//    }
+//    mRendererEncoder.draw(textureId);
+
+    if (mEncoder == null) {
+      mEncoder = new SoftEncoder();
+      mEncoder.prepareEncoder();
+      mEncoder.startEncoder();
     }
-    mRendererEncoder.draw(textureId);
   }
 }

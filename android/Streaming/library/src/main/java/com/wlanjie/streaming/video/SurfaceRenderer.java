@@ -105,9 +105,9 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     int textureId = mOpenGL.draw(mSurfaceTextureId);
 //    mWindowSurface.swapBuffers();
 
-//    if (mOnRendererEncoderListener != null) {
-//      mOnRendererEncoderListener.onRenderEncoder(textureId);
-//    }
+    if (mOnRendererEncoderListener != null) {
+      mOnRendererEncoderListener.onRenderEncoder(textureId);
+    }
   }
 
   public void setOnSurfaceListener(OnSurfaceListener l) {

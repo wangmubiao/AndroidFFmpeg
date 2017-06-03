@@ -4,7 +4,8 @@
 
 #include <cstdlib>
 
-#include "VideoEncode.h"
+#include "videoencoder.h"
+using namespace wlanjie;
 
 VideoEncode::VideoEncode() {
     global_nal_header = false;
@@ -39,8 +40,9 @@ int VideoEncode::rgba_encode_to_h264(char *frame, int width, int height, bool ne
     if (yuv == NULL) {
         return -1;
     }
-    int es_len = global_nal_header ? encode_global_nal_header(yuv) : x264_encode(yuv);
-    return es_len;
+//    int es_len = global_nal_header ? encode_global_nal_header() : x264_encode(yuv);
+//    return es_len;
+    return 0;
 }
 
 int VideoEncode::open_h264_encode() {
@@ -103,7 +105,7 @@ void VideoEncode::close_h264_encode() {
     }
 }
 
-int VideoEncode::encode_global_nal_header(YuvFrame *yuv) {
+int VideoEncode::encode_global_nal_header() {
     x264_nal_t *nal;
     int nal_size;
     global_nal_header = false;
@@ -112,19 +114,22 @@ int VideoEncode::encode_global_nal_header(YuvFrame *yuv) {
     return encode_nal(nal, nal_size);
 }
 
-int VideoEncode::x264_encode(YuvFrame *yuv) {
+int VideoEncode::x264_encode(uint8_t *y, uint8_t *u, uint8_t *v, int width) {
+    if (global_nal_header) {
+        return encode_global_nal_header();
+    }
     int nal_size;
     x264_nal_t *nal;
     x264_picture_t pic_out;
 
     picture.img.i_csp = X264_CSP_I420;
     picture.img.i_plane = 3;
-    picture.img.plane[0] = yuv->y;
-    picture.img.i_stride[0] = yuv->width;
-    picture.img.plane[1] = yuv->u;
-    picture.img.i_stride[1] = yuv->width / 2;
-    picture.img.plane[2] = yuv->v;
-    picture.img.i_stride[2] = yuv->width / 2;
+    picture.img.plane[0] = y;
+    picture.img.i_stride[0] = width;
+    picture.img.plane[1] = u;
+    picture.img.i_stride[1] = width / 2;
+    picture.img.plane[2] = v;
+    picture.img.i_stride[2] = width / 2;
     picture.i_pts = pts;
     picture.i_type = X264_TYPE_AUTO;
 

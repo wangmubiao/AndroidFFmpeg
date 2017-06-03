@@ -3,7 +3,7 @@
 //
 
 #include <libAACenc/include/aacenc_lib.h>
-#include "AudioEncode.h"
+#include "audioencoder.h"
 
 AudioEncode::AudioEncode() {
 

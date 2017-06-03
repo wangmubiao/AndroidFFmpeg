@@ -58,7 +58,7 @@ enum {
 };
 
 #define DL_FUNC(hndl, fn, type) (type)dlsym(hndl, fn)
-#define DL_FUNC_CHECK(hndl, fn_ptr, fn) if (!fn_ptr) { LOGE("MemTransferAndroid", "could not dynamically link func '%s': %s", fn, dlerror()); dlclose(hndl); return false; }
+#define DL_FUNC_CHECK(hndl, fn_ptr, fn) if (!fn_ptr) { LOGE("could not dynamically link func '%s': %s", fn, dlerror()); dlclose(hndl); return false; }
 
 wlanjie::GraphicBufferFnCtor wlanjie::Memtransfer::graBufCreate = NULL;
 wlanjie::GraphicBufferFnDtor wlanjie::Memtransfer::graBufDestroy = NULL;
@@ -128,7 +128,7 @@ GLuint wlanjie::Memtransfer::prepareInput(int width, int height, GLenum inputPxF
     // handle input pixel format
     int nativePxFmt = HAL_PIXEL_FORMAT_RGBA_8888;
     if (inputPixelFormat != GL_RGBA) {
-        LOGE("MemTransferAndroid", "warning: only GL_RGBA is valid as input pixel format");
+        LOGE("warning: only GL_RGBA is valid as input pixel format");
     }
 
     // create graphic buffer
@@ -140,7 +140,7 @@ GLuint wlanjie::Memtransfer::prepareInput(int width, int height, GLenum inputPxF
     inputNativeBuf = (struct ANativeWindowBuffer *)graBufGetNativeBuffer(inputGraBufHndl);
 
     if (!inputNativeBuf) {
-        LOGE("MemTransferAndroid", "error getting native window buffer for input");
+        LOGE("error getting native window buffer for input");
         return 0;
     }
 
@@ -153,7 +153,7 @@ GLuint wlanjie::Memtransfer::prepareInput(int width, int height, GLenum inputPxF
                                 eglImgAttrs);	// or NULL as last param?
 
     if (!inputImage) {
-        LOGE("MemTransferAndroid", "error creating image KHR for input");
+        LOGE("error creating image KHR for input");
         return 0;
     }
     return inputTextureId;
@@ -268,7 +268,7 @@ void *wlanjie::Memtransfer::lockBufferAndGetPtr(wlanjie::BufType bufType) {
 
     // check for valid pointer
     if (!memPtr) {
-        LOGE("MemTransferAndroid", "GraphicBuffer lock returned invalid pointer");
+        LOGE("GraphicBuffer lock returned invalid pointer");
     }
     return (void *)memPtr;
 }
