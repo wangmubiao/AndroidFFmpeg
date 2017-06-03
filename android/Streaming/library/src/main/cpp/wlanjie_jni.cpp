@@ -12,7 +12,7 @@
 #include "srs_librtmp.hpp"
 #include "muxer.h"
 #include "log.h"
-#include "videoencoder.h"
+// #include "videoencoder.h"
 #include "audioencoder.h"
 #include "opengl/opengl.h"
 
@@ -40,7 +40,7 @@ wlanjie::OpenGL *openGL;
 
 std::queue<Frame> q;
 
-wlanjie::VideoEncode videoEncode;
+// wlanjie::VideoEncode videoEncode;
 AudioEncode audioEncode;
 srs_rtmp_t rtmp;
 bool is_stop = false;
@@ -107,30 +107,30 @@ void muxer_h264_success(char *data, int size, int pts) {
 }
 
 void Android_JNI_setEncoderResolution(JNIEnv *env, jobject object, jint width, jint height) {
-    videoEncode.setEncodeResolution(width, height);
+    // videoEncode.setEncodeResolution(width, height);
 }
 
 void Android_JNI_setEncoderFps(JNIEnv *env, jobject object, jint fps) {
-    videoEncode.setEncodeFps(fps);
+    // videoEncode.setEncodeFps(fps);
 }
 
 void Android_JNI_setEncoderGop(JNIEnv *env, jobject object, jint gop_size) {
-    videoEncode.setEncodeGop(gop_size);
+    // videoEncode.setEncodeGop(gop_size);
 }
 
 void Android_JNI_setEncoderBitrate(JNIEnv *env, jobject object, jint bitrate) {
-    videoEncode.setEncodeBitrate(bitrate);
+    // videoEncode.setEncodeBitrate(bitrate);
 }
 
 void Android_JNI_setEncoderPreset(JNIEnv *env, jobject object, jstring preset) {
     const char *enc_preset = env->GetStringUTFChars(preset, NULL);
-    videoEncode.setEncodePreset(enc_preset);
+    // videoEncode.setEncodePreset(enc_preset);
     env->ReleaseStringUTFChars(preset, enc_preset);
 }
 
 jbyteArray Android_JNI_NV21ToI420(JNIEnv *env, jobject object, jbyteArray frame, jint src_width, jint src_height, jboolean need_flip, jint rotate_degree) {
     jbyte *nv21_frame = env->GetByteArrayElements(frame, NULL);
-    YuvFrame *i420 = videoEncode.nv21_convert_i420((char *) nv21_frame, src_width, src_height, need_flip, rotate_degree);
+    // YuvFrame *i420 = videoEncode.nv21_convert_i420((char *) nv21_frame, src_width, src_height, need_flip, rotate_degree);
     env->ReleaseByteArrayElements(frame, nv21_frame, JNI_ABORT);
     return NULL;
 }
@@ -138,47 +138,48 @@ jbyteArray Android_JNI_NV21ToI420(JNIEnv *env, jobject object, jbyteArray frame,
 jbyteArray Android_JNI_NV21ToNV12(JNIEnv* env, jobject object, jbyteArray frame, jint src_width,
                             jint src_height, jboolean need_flip, jint rotate_degree) {
     jbyte *nv21_frame = env->GetByteArrayElements(frame, NULL);
-    YuvFrame *nv12 = videoEncode.nv21_convert_nv12((char *) nv21_frame, src_width, src_height, need_flip, rotate_degree);
+    // YuvFrame *nv12 = videoEncode.nv21_convert_nv12((char *) nv21_frame, src_width, src_height, need_flip, rotate_degree);
     env->ReleaseByteArrayElements(frame, nv21_frame, NULL);
     return NULL;
 }
 
 jbyteArray Android_JNI_rgbaToI420(JNIEnv* env, jobject object, jbyteArray frame, jint src_width,
                                   jint src_height, jboolean need_flip, jint rotate_degree) {
-    jbyte *rgba_frame = env->GetByteArrayElements(frame, NULL);
-    YuvFrame *yuv = videoEncode.rgba_convert_i420((char *) rgba_frame, src_width, src_height, need_flip, rotate_degree);
-    env->ReleaseByteArrayElements(frame, rgba_frame, NULL);
-    if (yuv == NULL) {
-        return NULL;
-    }
-
-    int y_size = yuv->width * yuv->height;
-    jbyteArray i420 = env->NewByteArray(y_size * 3 / 2);
-    env->SetByteArrayRegion(i420, 0, y_size * 3 / 2, (jbyte *) yuv->data);
-    return i420;
+    // jbyte *rgba_frame = env->GetByteArrayElements(frame, NULL);
+    // YuvFrame *yuv = videoEncode.rgba_convert_i420((char *) rgba_frame, src_width, src_height, need_flip, rotate_degree);
+    // env->ReleaseByteArrayElements(frame, rgba_frame, NULL);
+    // if (yuv == NULL) {
+    //     return NULL;
+    // }
+    //
+    // int y_size = yuv->width * yuv->height;
+    // jbyteArray i420 = env->NewByteArray(y_size * 3 / 2);
+    // env->SetByteArrayRegion(i420, 0, y_size * 3 / 2, (jbyte *) yuv->data);
+    return NULL;
 }
 
 jbyteArray Android_JNI_rgbaToNV12(JNIEnv* env, jobject object, jbyteArray frame, jint src_width,
                                   jint src_height, jboolean need_flip, jint rotate_degree) {
-    jbyte *rgba_frame = env->GetByteArrayElements(frame, NULL);
-    YuvFrame *nv12 = videoEncode.rgba_convert_nv12((char *) rgba_frame, src_width, src_height, need_flip, rotate_degree);
-    env->ReleaseByteArrayElements(frame, rgba_frame, NULL);
-    if (nv12 == NULL) {
-        return NULL;
-    }
-
-    int y_size = nv12->width * nv12->height;
-    jbyteArray i420 = env->NewByteArray(y_size * 3 / 2);
-    env->SetByteArrayRegion(i420, 0, y_size * 3 / 2, (jbyte *) nv12->data);
-    return i420;
+    // jbyte *rgba_frame = env->GetByteArrayElements(frame, NULL);
+    // YuvFrame *nv12 = videoEncode.rgba_convert_nv12((char *) rgba_frame, src_width, src_height, need_flip, rotate_degree);
+    // env->ReleaseByteArrayElements(frame, rgba_frame, NULL);
+    // if (nv12 == NULL) {
+    //     return NULL;
+    // }
+    //
+    // int y_size = nv12->width * nv12->height;
+    // jbyteArray i420 = env->NewByteArray(y_size * 3 / 2);
+    // env->SetByteArrayRegion(i420, 0, y_size * 3 / 2, (jbyte *) nv12->data);
+    return NULL;
 }
 
 jboolean Android_JNI_openH264Encoder(JNIEnv* env, jobject object) {
-    return (jboolean) (videoEncode.open_h264_encode() >= 0 ? JNI_TRUE : JNI_FALSE);
+    // return (jboolean) (videoEncode.open_h264_encode() >= 0 ? JNI_TRUE : JNI_FALSE);
+    return false;
 }
 
 void Android_JNI_closeH264Encoder(JNIEnv* env, jobject object) {
-    videoEncode.close_h264_encode();
+    // videoEncode.close_h264_encode();
 }
 
 jint Android_JNI_NV21EncodeToH264(JNIEnv* env, jobject object, jbyteArray frame, jint src_width, jint src_height, jboolean need_flip, jint rotate_degree, jlong pts) {
@@ -187,36 +188,36 @@ jint Android_JNI_NV21EncodeToH264(JNIEnv* env, jobject object, jbyteArray frame,
 }
 
 jint Android_JNI_rgbaEncodeToH264(JNIEnv* env, jobject object, jbyteArray rgba_frame, jint src_width, jint src_height, jboolean need_flip, jint rotate_degree, jlong pts) {
-    jbyte *rgba = env->GetByteArrayElements(rgba_frame, NULL);
-    int h264_size = videoEncode.rgba_encode_to_h264((char *) rgba, src_width, src_height, need_flip, rotate_degree, pts);
-    env->ReleaseByteArrayElements(rgba_frame, rgba, NULL);
-    if (h264_size > 0) {
-        muxer_h264_success((char *) videoEncode.get_h264(), h264_size, pts);
-    }
+    // jbyte *rgba = env->GetByteArrayElements(rgba_frame, NULL);
+    // int h264_size = videoEncode.rgba_encode_to_h264((char *) rgba, src_width, src_height, need_flip, rotate_degree, pts);
+    // env->ReleaseByteArrayElements(rgba_frame, rgba, NULL);
+    // if (h264_size > 0) {
+    //     muxer_h264_success((char *) videoEncode.get_h264(), h264_size, pts);
+    // }
     return 0;
 }
 
 void Android_JNI_encoderH264(JNIEnv *env, jobject object) {
-    unsigned char *buffer = openGL->getBuffer();
-
-    int width = openGL->getWidth();
-    int height = openGL->getHeight();
-    int ySize = openGL->getWidth() * openGL->getHeight();
-    uint8_t *data = (uint8_t *) malloc((size_t) (ySize * 3 / 2));
-    uint8_t *u = data + ySize;
-    uint8_t *v = u + ySize / 4;
-    libyuv::ConvertToI420(buffer, ySize, data, width, u, width / 2, v, width / 2, 0, 0, width, height, width, height, libyuv::kRotate0, libyuv::FOURCC_BPP_RGBA);
-    int size = videoEncode.x264_encode(data, u, v, width);
-    uint8_t *h264 = videoEncode.get_h264();
-
-    char *frame_data = (char *) malloc((size_t) size);
-    memcpy(frame_data, h264, size);
-    Frame f;
-    f.data = frame_data;
-    f.size = size;
-    f.pts = (int) time(NULL) / 1000;
-    f.packet_type = VIDEO_TYPE;
-    q.push(f);
+    // unsigned char *buffer = openGL->getBuffer();
+    //
+    // int width = openGL->getWidth();
+    // int height = openGL->getHeight();
+    // int ySize = openGL->getWidth() * openGL->getHeight();
+    // uint8_t *data = (uint8_t *) malloc((size_t) (ySize * 3 / 2));
+    // uint8_t *u = data + ySize;
+    // uint8_t *v = u + ySize / 4;
+    // libyuv::ConvertToI420(buffer, ySize, data, width, u, width / 2, v, width / 2, 0, 0, width, height, width, height, libyuv::kRotate0, libyuv::FOURCC_BPP_RGBA);
+    // int size = videoEncode.x264_encode(data, u, v, width);
+    // uint8_t *h264 = videoEncode.get_h264();
+    //
+    // char *frame_data = (char *) malloc((size_t) size);
+    // memcpy(frame_data, h264, size);
+    // Frame f;
+    // f.data = frame_data;
+    // f.size = size;
+    // f.pts = (int) time(NULL) / 1000;
+    // f.packet_type = VIDEO_TYPE;
+    // q.push(f);
 }
 
 jboolean Android_JNI_openAacEncode(JNIEnv *env, jobject object, jint channels, jint sample_rate, jint bitrate) {
@@ -308,10 +309,10 @@ void Android_JNI_destroy(JNIEnv *env, jobject object) {
 }
 
 void Android_JNI_opengl_init(JNIEnv *env, jobject object, jint width, jint height) {
-    videoEncode.setEncodeResolution(width, height);
-    videoEncode.setEncodeGop(2 * 24);
-    videoEncode.setEncodeFps(24);
-    videoEncode.setEncodeBitrate(800 * 1000);
+    // videoEncode.setEncodeResolution(width, height);
+    // videoEncode.setEncodeGop(2 * 24);
+    // videoEncode.setEncodeFps(24);
+    // videoEncode.setEncodeBitrate(800 * 1000);
 //    videoEncode.setEncodePreset("veryfast");
 
     openGL->init(width, height);

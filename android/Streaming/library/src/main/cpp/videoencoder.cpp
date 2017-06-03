@@ -47,7 +47,7 @@ int VideoEncode::rgba_encode_to_h264(char *frame, int width, int height, bool ne
 
 int VideoEncode::open_h264_encode() {
     // Presetting
-    x264_param_default_preset(&param, "superfast", "zerolatency");
+    x264_param_default_preset(&param, "ultrafast", "zerolatency");
 
     // Resolution
     param.i_width = width;
