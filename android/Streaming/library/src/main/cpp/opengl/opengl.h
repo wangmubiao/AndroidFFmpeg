@@ -28,11 +28,19 @@ namespace wlanjie {
 
         void setTextureTransformMatrix(GLfloat *textureTransformMatrix);
 
+        unsigned char* getBuffer();
+
+        int getWidth();
+
+        int getHeight();
+
         void release();
 
     private:
         Effect *effect;
         Display *display;
+        int width;
+        int height;
     };
 
 }

@@ -15,6 +15,8 @@ wlanjie::OpenGL::~OpenGL() {
 }
 
 void wlanjie::OpenGL::init(int width, int height) {
+    this->width = width;
+    this->height = height;
     effect->attachShaderSource();
     display->attachShaderSource();
     effect->init(width, height);
@@ -43,4 +45,16 @@ void wlanjie::OpenGL::release() {
 
 void wlanjie::OpenGL::setTextureTransformMatrix(GLfloat *textureTransformMatrix) {
     effect->setTextureTransformMatrix(textureTransformMatrix);
+}
+
+unsigned char *wlanjie::OpenGL::getBuffer() {
+    return effect->getBuffer();
+}
+
+int wlanjie::OpenGL::getWidth() {
+    return width;
+}
+
+int wlanjie::OpenGL::getHeight() {
+    return height;
 }

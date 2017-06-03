@@ -8,6 +8,7 @@
 
 #include <jni.h>
 #include <queue>
+#include <time.h>
 #include "srs_librtmp.hpp"
 #include "muxer.h"
 #include "log.h"
@@ -287,10 +288,13 @@ void Android_JNI_destroy(JNIEnv *env, jobject object) {
 
 void Android_JNI_opengl_init(JNIEnv *env, jobject object, jint width, jint height) {
     openGL->init(width, height);
+    Android_JNI_openH264Encoder(env, object);
 }
 
 jint Android_JNI_opengl_draw(JNIEnv *env, jobject object, jint inputTextureId) {
-    return openGL->draw(inputTextureId);
+    int textureId = openGL->draw(inputTextureId);
+    unsigned char* buffer = openGL->getBuffer();
+    return textureId;
 }
 
 void Android_JNI_opengl_setInputTexture(JNIEnv *env, jobject object, jint textureId) {

@@ -29,6 +29,8 @@ namespace wlanjie {
 
         void setTextureTransformMatrix(GLfloat *textureTransformMatrix);
 
+        unsigned char* getBuffer();
+
         void release();
 
     private:
@@ -44,6 +46,7 @@ namespace wlanjie {
         int width;
         int height;
         GLfloat *textureTransformMatrix;
+        unsigned char *buffer;
     };
 
 }

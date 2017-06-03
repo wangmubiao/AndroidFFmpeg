@@ -3,6 +3,7 @@
 //
 
 #include <GLES2/gl2ext.h>
+#include <malloc.h>
 #include "effect.h"
 #include "../log.h"
 
@@ -50,6 +51,9 @@ wlanjie::Effect::~Effect() {
 void wlanjie::Effect::init(int width, int height) {
     this->width = width;
     this->height = height;
+
+    buffer = (unsigned char *) malloc((size_t) (width * height * 4));
+
     glGenFramebuffers(1, &frameBufferId);
     glGenTextures(1, &textureId);
     glBindTexture(GL_TEXTURE_2D, textureId);
@@ -63,10 +67,8 @@ void wlanjie::Effect::init(int width, int height) {
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-//    glActiveTexture(GL_TEXTURE0);
-//    memtransfer->init();
-//    outputTextureId = memtransfer->prepareOutput(width, height);
-
+    memtransfer->init();
+    memtransfer->prepareOutput(width, height, textureId);
 }
 
 GLuint wlanjie::Effect::draw(int textureId) {
@@ -127,8 +129,14 @@ void wlanjie::Effect::release() {
     if (memtransfer) {
         memtransfer->releaseOutput();
     }
+    free(buffer);
 }
 
 void wlanjie::Effect::setTextureTransformMatrix(GLfloat *textureTransformMatrix) {
     this->textureTransformMatrix = textureTransformMatrix;
+}
+
+unsigned char *wlanjie::Effect::getBuffer() {
+    memtransfer->fromGPU(buffer, textureId);
+    return buffer;
 }
