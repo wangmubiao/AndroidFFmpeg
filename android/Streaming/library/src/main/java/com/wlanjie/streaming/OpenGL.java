@@ -10,7 +10,7 @@ public class OpenGL {
 
   public native void init(int width, int height);
 
-  public native void draw();
+  public native void draw(int inputTextureId);
 
   public native void setInputTexture(int textureId);
 

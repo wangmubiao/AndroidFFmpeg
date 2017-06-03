@@ -20,9 +20,9 @@ void wlanjie::OpenGL::init(int width, int height) {
     display->setTextureId(effect->getOutputTextureId());
 }
 
-void wlanjie::OpenGL::draw() {
-    effect->draw();
-    display->draw();
+void wlanjie::OpenGL::draw(int inputTextureId) {
+    GLuint textureId = effect->draw(inputTextureId);
+    display->draw(textureId);
 }
 
 void wlanjie::OpenGL::setInputPixels(uint8_t *data) {
@@ -34,6 +34,6 @@ void wlanjie::OpenGL::setInputTexture(int textureId) {
 }
 
 void wlanjie::OpenGL::release() {
-    effect->relase();
+    effect->release();
     display->release();
 }

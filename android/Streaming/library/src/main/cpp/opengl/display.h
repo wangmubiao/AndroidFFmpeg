@@ -23,7 +23,7 @@ namespace wlanjie {
 
         virtual void setTextureId(GLuint textureId);
 
-        virtual void draw();
+        virtual void draw(int textureId);
 
         virtual void release();
 

@@ -19,7 +19,7 @@ namespace wlanjie {
 
         void init(int width, int height);
 
-        void draw();
+        GLuint draw(int textureId);
 
         void attachShaderSource(const char *vertexSource = NULL, const char *fragmentSource = NULL);
 
@@ -27,7 +27,7 @@ namespace wlanjie {
 
         void setInputTextureId(GLuint textureId);
 
-        void relase();
+        void release();
 
     private:
         Util *util;
@@ -38,6 +38,7 @@ namespace wlanjie {
         GLuint frameBufferId;
         GLuint outputTextureId;
         GLuint inputTextureId;
+        GLuint textureId;
     };
 
 }

@@ -76,21 +76,27 @@ void wlanjie::Display::attachShaderSource(const char *vertexSource, const char *
     glLinkProgram(programId);
 }
 
-void wlanjie::Display::draw() {
+void wlanjie::Display::draw(int textureId) {
     LOGE("display draw");
+    glViewport(0, 0, 1280, 720);
     glUseProgram(programId);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, textureId);
-
-    GLint inputTextureUniform = glGetUniformLocation(programId, "inputImageTexture");
-    glUniform1i(inputTextureUniform, 0);
     GLint position = glGetAttribLocation(programId, "position");
     glEnableVertexAttribArray((GLuint) position);
     glVertexAttribPointer((GLuint) position, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), vertexBuffer);
+
     GLint textureCoordinate = glGetAttribLocation(programId, "inputTextureCoordinate");
     glEnableVertexAttribArray((GLuint) textureCoordinate);
     glVertexAttribPointer((GLuint) textureCoordinate, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GL_FLOAT), textureCoordinateBuffer);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, (GLuint) textureId);
+
+    GLint inputTextureUniform = glGetUniformLocation(programId, "inputImageTexture");
+    glUniform1i(inputTextureUniform, 0);
+
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
 
     glDisableVertexAttribArray((GLuint) position);
     glDisableVertexAttribArray((GLuint) textureCoordinate);

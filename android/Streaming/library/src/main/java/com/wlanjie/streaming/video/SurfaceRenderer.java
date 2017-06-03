@@ -5,6 +5,7 @@ import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+import android.util.Log;
 
 import com.wlanjie.streaming.OpenGL;
 import com.wlanjie.streaming.camera.Effect;
@@ -66,8 +67,8 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
       mOnSurfaceListener.onSurfaceChanged(gl, width, height);
     }
 
-    mWindowSurface = new WindowSurface(mEglCore, mSurfaceTexture);
-    mWindowSurface.makeCurrent();
+//    mWindowSurface = new WindowSurface(mEglCore, mSurfaceTexture);
+//    mWindowSurface.makeCurrent();
 
     mOpenGL.init(width, height);
     mEffect.onInputSizeChanged(width, height);
@@ -85,6 +86,7 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
 
   @Override
   public void onDrawFrame(GL10 gl) {
+    Log.d("Renderer", "onDrawFrame");
     if (mOnSurfaceListener != null) {
       mOnSurfaceListener.onDrawFrame(gl);
     }
@@ -100,7 +102,7 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
 //    mRendererScreen.draw(textureId);
 
 //    mOpenGL.setInputTexture(mSurfaceTextureId);
-//    mOpenGL.draw();
+    mOpenGL.draw(mSurfaceTextureId);
 //    mWindowSurface.swapBuffers();
 
 //    if (mOnRendererEncoderListener != null) {

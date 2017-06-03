@@ -20,7 +20,7 @@ namespace wlanjie {
 
         void init(int width, int height);
 
-        void draw();
+        void draw(int inputTextureId);
 
         void setInputPixels(uint8_t *data);
 

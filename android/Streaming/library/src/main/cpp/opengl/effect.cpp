@@ -47,38 +47,49 @@ wlanjie::Effect::~Effect() {
 
 void wlanjie::Effect::init(int width, int height) {
     glGenFramebuffers(1, &frameBufferId);
+    glGenTextures(1, &textureId);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
-    glActiveTexture(GL_TEXTURE0);
-    memtransfer->init();
-    outputTextureId = memtransfer->prepareOutput(width, height);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, outputTextureId, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureId, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+//    glActiveTexture(GL_TEXTURE0);
+//    memtransfer->init();
+//    outputTextureId = memtransfer->prepareOutput(width, height);
+
 }
 
-void wlanjie::Effect::draw() {
+GLuint wlanjie::Effect::draw(int textureId) {
     LOGE("effect draw");
+    glViewport(0, 0, 1280, 720);
     glUseProgram(programId);
-    GLint uniform = glGetUniformLocation(programId, "inputImageTexture");
-    glUniform1i(uniform, 0);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
-
     GLint position = glGetAttribLocation(programId, "position");
     glEnableVertexAttribArray((GLuint) position);
     glVertexAttribPointer((GLuint) position, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), effectVertexBuffer);
+
     GLint inputTextureCoordinate = glGetAttribLocation(programId, "inputTextureCoordinate");
     glEnableVertexAttribArray((GLuint) inputTextureCoordinate);
-    glVertexAttribPointer(inputTextureCoordinate, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GL_FLOAT), effectTextureCoordinateBuffer);
+    glVertexAttribPointer((GLuint) inputTextureCoordinate, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GL_FLOAT), effectTextureCoordinateBuffer);
 
+    glActiveTexture(GL_TEXTURE0);
+    GLint uniform = glGetUniformLocation(programId, "inputImageTexture");
+    glUniform1i(uniform, 0);
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, (GLuint) textureId);
+    glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-    glDisableVertexAttribArray(position);
-    glDisableVertexAttribArray(inputTextureCoordinate);
-
-    glBindTexture(GL_TEXTURE_EXTERNAL_OES, inputTextureId);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
+
+    glDisableVertexAttribArray((GLuint) position);
+    glDisableVertexAttribArray((GLuint) inputTextureCoordinate);
+
+    return this->textureId;
 }
 
 void wlanjie::Effect::attachShaderSource(const char *vertexSource, const char *fragmentSource) {
@@ -102,7 +113,7 @@ void wlanjie::Effect::setInputTextureId(GLuint textureId) {
     this->inputTextureId = textureId;
 }
 
-void wlanjie::Effect::relase() {
+void wlanjie::Effect::release() {
     glDeleteProgram(programId);
     glDeleteFramebuffers(1, &frameBufferId);
     if (memtransfer) {
