@@ -289,8 +289,8 @@ void Android_JNI_opengl_init(JNIEnv *env, jobject object, jint width, jint heigh
     openGL->init(width, height);
 }
 
-void Android_JNI_opengl_draw(JNIEnv *env, jobject object, jint inputTextureId) {
-    openGL->draw(inputTextureId);
+jint Android_JNI_opengl_draw(JNIEnv *env, jobject object, jint inputTextureId) {
+    return openGL->draw(inputTextureId);
 }
 
 void Android_JNI_opengl_setInputTexture(JNIEnv *env, jobject object, jint textureId) {
@@ -305,6 +305,12 @@ void Android_JNI_opengl_setInputPixels(JNIEnv *env, jobject object, jbyteArray p
 jobject Android_JNI_opengl_getOutputPixels(JNIEnv *env, jobject object) {
 //    openGL
     return NULL;
+}
+
+void Android_JNI_opengl_setTextureTransformMatrix(JNIEnv *env, jobject object, jfloatArray matrix) {
+    jfloat *data = env->GetFloatArrayElements(matrix, JNI_FALSE);
+    openGL->setTextureTransformMatrix(data);
+//    env->ReleaseFloatArrayElements(matrix, data, 0);
 }
 
 void Android_JNI_opengl_release(JNIEnv *env, jobject object) {
@@ -352,10 +358,11 @@ static JNINativeMethod rtmp_methods[] = {
 
 static JNINativeMethod opengl_methods[] = {
         { "init",                   "(II)V",                    (void *) Android_JNI_opengl_init },
-        { "draw",                   "(I)V",                     (void *) Android_JNI_opengl_draw },
+        { "draw",                   "(I)I",                     (void *) Android_JNI_opengl_draw },
         { "setInputTexture",        "(I)V",                     (void *) Android_JNI_opengl_setInputTexture },
         { "setInputPixels",         "([B)V",                    (void *) Android_JNI_opengl_setInputPixels },
         { "getOutputPixels",        "()Ljava/nio/ByteBuffer;",  (void *) Android_JNI_opengl_getOutputPixels },
+        { "setTextureTransformMatrix","([F)V",                  (void *) Android_JNI_opengl_setTextureTransformMatrix },
         { "release",                "()V",                      (void *) Android_JNI_opengl_release },
 };
 

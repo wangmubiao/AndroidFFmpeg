@@ -10,13 +10,15 @@ public class OpenGL {
 
   public native void init(int width, int height);
 
-  public native void draw(int inputTextureId);
+  public native int draw(int inputTextureId);
 
   public native void setInputTexture(int textureId);
 
   public native void setInputPixels(byte[] pixels);
 
   public native ByteBuffer getOutputPixels();
+
+  public native void setTextureTransformMatrix(float[] matrix);
 
   public native void release();
 }

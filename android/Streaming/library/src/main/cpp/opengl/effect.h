@@ -27,6 +27,8 @@ namespace wlanjie {
 
         void setInputTextureId(GLuint textureId);
 
+        void setTextureTransformMatrix(GLfloat *textureTransformMatrix);
+
         void release();
 
     private:
@@ -39,6 +41,9 @@ namespace wlanjie {
         GLuint outputTextureId;
         GLuint inputTextureId;
         GLuint textureId;
+        int width;
+        int height;
+        GLfloat *textureTransformMatrix;
     };
 
 }

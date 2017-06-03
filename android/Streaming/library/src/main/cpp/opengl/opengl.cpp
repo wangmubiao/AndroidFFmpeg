@@ -15,14 +15,17 @@ wlanjie::OpenGL::~OpenGL() {
 }
 
 void wlanjie::OpenGL::init(int width, int height) {
+    effect->attachShaderSource();
+    display->attachShaderSource();
     effect->init(width, height);
     display->init(width, height);
-    display->setTextureId(effect->getOutputTextureId());
+//    display->setTextureId(effect->getOutputTextureId());
 }
 
-void wlanjie::OpenGL::draw(int inputTextureId) {
+int wlanjie::OpenGL::draw(int inputTextureId) {
     GLuint textureId = effect->draw(inputTextureId);
     display->draw(textureId);
+    return textureId;
 }
 
 void wlanjie::OpenGL::setInputPixels(uint8_t *data) {
@@ -30,10 +33,14 @@ void wlanjie::OpenGL::setInputPixels(uint8_t *data) {
 }
 
 void wlanjie::OpenGL::setInputTexture(int textureId) {
-    effect->setInputTextureId(textureId);
+//    effect->setInputTextureId(textureId);
 }
 
 void wlanjie::OpenGL::release() {
     effect->release();
     display->release();
+}
+
+void wlanjie::OpenGL::setTextureTransformMatrix(GLfloat *textureTransformMatrix) {
+    effect->setTextureTransformMatrix(textureTransformMatrix);
 }

@@ -20,11 +20,13 @@ namespace wlanjie {
 
         void init(int width, int height);
 
-        void draw(int inputTextureId);
+        int draw(int inputTextureId);
 
         void setInputPixels(uint8_t *data);
 
         void setInputTexture(int textureId);
+
+        void setTextureTransformMatrix(GLfloat *textureTransformMatrix);
 
         void release();
 

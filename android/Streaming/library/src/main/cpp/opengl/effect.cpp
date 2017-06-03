@@ -24,16 +24,18 @@ auto effectFragment = "#extension GL_OES_EGL_image_external : require\n"
         "}\n";
 
 const GLfloat effectVertexBuffer[] = {
-        -1, -1, 0,
-        1, -1, 0,
-        -1, 1, 0,
-        1, 1, 0};
+        -1.0f, -1.0f,
+        1.0f, -1.0f,
+        -1.0f, 1.0f,
+        1.0f, 1.0f
+};
 
 const GLfloat effectTextureCoordinateBuffer[] = {
-        0, 0,
-        1, 0,
-        0, 1,
-        1, 1};
+        0.0f, 1.0f,
+        1.0f, 1.0f,
+        0.0f, 0.0f,
+        1.0f, 0.0f,
+};
 
 wlanjie::Effect::Effect() {
     util = new Util();
@@ -46,6 +48,8 @@ wlanjie::Effect::~Effect() {
 }
 
 void wlanjie::Effect::init(int width, int height) {
+    this->width = width;
+    this->height = height;
     glGenFramebuffers(1, &frameBufferId);
     glGenTextures(1, &textureId);
     glBindTexture(GL_TEXTURE_2D, textureId);
@@ -67,11 +71,11 @@ void wlanjie::Effect::init(int width, int height) {
 
 GLuint wlanjie::Effect::draw(int textureId) {
     LOGE("effect draw");
-    glViewport(0, 0, 1280, 720);
+//    glViewport(0, 0, width, height);
     glUseProgram(programId);
     GLint position = glGetAttribLocation(programId, "position");
     glEnableVertexAttribArray((GLuint) position);
-    glVertexAttribPointer((GLuint) position, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), effectVertexBuffer);
+    glVertexAttribPointer((GLuint) position, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GL_FLOAT), effectVertexBuffer);
 
     GLint inputTextureCoordinate = glGetAttribLocation(programId, "inputTextureCoordinate");
     glEnableVertexAttribArray((GLuint) inputTextureCoordinate);
@@ -80,6 +84,10 @@ GLuint wlanjie::Effect::draw(int textureId) {
     glActiveTexture(GL_TEXTURE0);
     GLint uniform = glGetUniformLocation(programId, "inputImageTexture");
     glUniform1i(uniform, 0);
+
+    GLint textureTransform = glGetUniformLocation(programId, "textureTransform");
+    glUniformMatrix4fv(textureTransform, 1, GL_FALSE, textureTransformMatrix);
+
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, (GLuint) textureId);
     glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -119,4 +127,8 @@ void wlanjie::Effect::release() {
     if (memtransfer) {
         memtransfer->releaseOutput();
     }
+}
+
+void wlanjie::Effect::setTextureTransformMatrix(GLfloat *textureTransformMatrix) {
+    this->textureTransformMatrix = textureTransformMatrix;
 }

@@ -63,7 +63,7 @@ namespace wlanjie {
         /**
          * Prepare for output frames of size <width>x<height>. Return a texture id for the output frames.
          */
-        virtual GLuint prepareOutput(int width, int height);
+        virtual GLuint prepareOutput(int width, int height, int textureId);
 
         /**
          * Delete Input texture.
@@ -83,7 +83,7 @@ namespace wlanjie {
         /**
          * Map data from GPU to <buf>
          */
-        virtual void fromGPU(unsigned char *buf);
+        virtual void fromGPU(unsigned char *buf, int textureId);
 
         /**
          * Lock the input or output buffer and return its base address.
@@ -123,7 +123,6 @@ namespace wlanjie {
         int outputHeight;
 
         GLuint inputTextureId;
-        GLuint outputTextureId;
         GLenum inputPixelFormat;
     };
 

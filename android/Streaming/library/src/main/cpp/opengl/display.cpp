@@ -22,17 +22,17 @@ auto fragment = "precision mediump float;\n"
         "}\n";
 
 GLfloat vertexBuffer[] = {
-        -1, -1, 0,
-        1, -1, 0,
-        -1, 1, 0,
-        1, 1, 0
+        -1.0f, -1.0f,
+        1.0f, -1.0f,
+        -1.0f, 1.0f,
+        1.0f, 1.0f
 };
 
 GLfloat textureCoordinateBuffer[] = {
-        0, 0,
-        1, 0,
-        0, 1,
-        1, 1
+        0.0f, 1.0f,
+        1.0f, 1.0f,
+        0.0f, 0.0f,
+        1.0f, 0.0f
 };
 
 wlanjie::Display::Display() {
@@ -44,23 +44,6 @@ wlanjie::Display::~Display() {
 }
 
 void wlanjie::Display::init(int width, int height) {
-    glActiveTexture(GL_TEXTURE0);
-//    glGenTextures(1, &textureId);
-//    if (textureId == 0) {
-//        return;
-//    }
-//    glBindTexture(GL_TEXTURE_2D, textureId);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_LINEAR);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_LINEAR);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//
-//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-//    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureId, 0);
-//    // check status
-//    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//
-//    glGenFramebuffers(1, &frameBufferId);
 }
 
 void wlanjie::Display::attachShaderSource(const char *vertexSource, const char *fragmentSource) {
@@ -78,11 +61,10 @@ void wlanjie::Display::attachShaderSource(const char *vertexSource, const char *
 
 void wlanjie::Display::draw(int textureId) {
     LOGE("display draw");
-    glViewport(0, 0, 1280, 720);
     glUseProgram(programId);
     GLint position = glGetAttribLocation(programId, "position");
     glEnableVertexAttribArray((GLuint) position);
-    glVertexAttribPointer((GLuint) position, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GL_FLOAT), vertexBuffer);
+    glVertexAttribPointer((GLuint) position, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GL_FLOAT), vertexBuffer);
 
     GLint textureCoordinate = glGetAttribLocation(programId, "inputTextureCoordinate");
     glEnableVertexAttribArray((GLuint) textureCoordinate);
@@ -107,5 +89,5 @@ void wlanjie::Display::release() {
 }
 
 void wlanjie::Display::setTextureId(GLuint textureId) {
-    this->textureId = textureId;
+//    this->textureId = textureId;
 }

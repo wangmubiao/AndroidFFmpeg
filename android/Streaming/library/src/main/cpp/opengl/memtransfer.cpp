@@ -159,18 +159,14 @@ GLuint wlanjie::Memtransfer::prepareInput(int width, int height, GLenum inputPxF
     return inputTextureId;
 }
 
-GLuint wlanjie::Memtransfer::prepareOutput(int width, int height) {
+GLuint wlanjie::Memtransfer::prepareOutput(int width, int height, int textureId) {
     if (outputWidth == width && outputHeight == height) {
-        return outputTextureId;
+        return 0;
     }
     outputWidth = width;
     outputHeight = height;
 
-    glGenTextures(1, &outputTextureId);
-    if (outputTextureId <= 0) {
-        return 0;
-    }
-    glBindTexture(GL_TEXTURE_2D, outputTextureId);
+    glBindTexture(GL_TEXTURE_2D, (GLuint) textureId);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
@@ -184,7 +180,7 @@ GLuint wlanjie::Memtransfer::prepareOutput(int width, int height) {
                                  (EGLClientBuffer)outputNativeBuf,
                                  eglImgAttrs);	// or NULL as last param?
 
-    return outputTextureId;
+    return 0;
 }
 
 void wlanjie::Memtransfer::releaseInput() {
@@ -235,9 +231,9 @@ void wlanjie::Memtransfer::toGPU(const unsigned char *buf) {
     unlockBuffer(BUF_TYPE_INPUT);
 }
 
-void wlanjie::Memtransfer::fromGPU(unsigned char *buf) {
+void wlanjie::Memtransfer::fromGPU(unsigned char *buf, int textureId) {
 // bind the output texture
-    glBindTexture(GL_TEXTURE_2D, outputTextureId);
+    glBindTexture(GL_TEXTURE_2D, textureId);
 
     // activate the image KHR for the output
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, outputImage);
