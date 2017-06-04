@@ -16,8 +16,10 @@ import com.wlanjie.streaming.configuration.CameraConfiguration;
 import com.wlanjie.streaming.configuration.VideoConfiguration;
 import com.wlanjie.streaming.video.Encoder;
 import com.wlanjie.streaming.video.HardEncoder;
+import com.wlanjie.streaming.video.HardSurfaceRenderer;
 import com.wlanjie.streaming.video.RendererEncoder;
 import com.wlanjie.streaming.video.SoftEncoder;
+import com.wlanjie.streaming.video.SoftSurfaceRenderer;
 import com.wlanjie.streaming.video.SurfaceRenderer;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -45,13 +47,20 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
   public RendererSurfaceView(Context context, AttributeSet attrs) {
     super(context, attrs);
     mContext = context;
+    init(null);
   }
 
   public void setVideoConfiguration(VideoConfiguration configuration) {
 //    mSurfaceRenderer.setEncoder(new HardEncoder());
   }
 
+  public void setCameraConfiguration(CameraConfiguration configuration) {
+    this.mCameraConfiguration = configuration;
+    System.out.println("setCameraConfiguration");
+  }
+
   public void init(CameraConfiguration configuration) {
+    System.out.println("surface init");
     int[] textures = new int[1];
     GLES20.glGenTextures(1, textures, 0);
     mSurfaceTextureId = textures[0];
@@ -69,7 +78,7 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
       mCamera = new Camera21(mContext, configuration);
     }
 
-    mSurfaceRenderer = new SurfaceRenderer(getContext(), mSurfaceTexture, mSurfaceTextureId);
+    mSurfaceRenderer = new SoftSurfaceRenderer(getContext(), mSurfaceTexture, mSurfaceTextureId);
     mSurfaceRenderer.setOnSurfaceListener(this);
     mSurfaceRenderer.setOnRendererEncoderListener(this);
 
@@ -106,12 +115,18 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
 
   @Override
   public void onSurfaceChanged(GL10 gl, int width, int height) {
-    mCameraConfiguration = new CameraConfiguration.Builder()
-      .setPreview(height, width)
-      .setFacing(Constants.FACING_FRONT)
-      .setSurfaceTexture(mSurfaceTexture)
-      .build();
-    mCamera.updateCameraConfiguration(mCameraConfiguration);
+    CameraConfiguration.Builder builder = mCameraConfiguration.builder;
+    if (mCameraConfiguration.width == 0 && mCameraConfiguration.height == 0) {
+      builder.setPreview(height, width);
+    }
+    if (mCameraConfiguration.facing == -1) {
+      builder.setFacing(Constants.FACING_BACK);
+    }
+    if (mCameraConfiguration.surfaceTexture == null) {
+      builder.setSurfaceTexture(mSurfaceTexture);
+    }
+
+    mCamera.updateCameraConfiguration(builder.build());
     mCamera.start();
   }
 

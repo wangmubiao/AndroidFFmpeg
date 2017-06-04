@@ -136,11 +136,11 @@ public class CameraView extends FrameLayout {
 //        mImpl.setDisplayOrientation(displayOrientation);
       }
     };
-    mGLSurfaceView.init(null);
+//    mGLSurfaceView.init(null);
   }
 
   public void setCameraConfiguration(CameraConfiguration configuration) {
-    mGLSurfaceView.init(configuration);
+    mGLSurfaceView.setCameraConfiguration(configuration);
   }
 
   public void setOnVideoEncoderListener(OnVideoEncoderListener l) {

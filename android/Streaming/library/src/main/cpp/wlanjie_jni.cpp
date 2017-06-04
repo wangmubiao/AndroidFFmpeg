@@ -321,7 +321,7 @@ void Android_JNI_opengl_init(JNIEnv *env, jobject object, jint width, jint heigh
 
 jint Android_JNI_opengl_draw(JNIEnv *env, jobject object, jint inputTextureId) {
     int textureId = openGL->draw(inputTextureId);
-    unsigned char* buffer = openGL->getBuffer();
+//    unsigned char* buffer = openGL->getBuffer();
     return textureId;
 }
 

@@ -44,8 +44,10 @@ public class CameraConfiguration {
   public final AspectRatio aspectRatio;
   public final int displayOrientation;
   public final SurfaceTexture surfaceTexture;
+  public Builder builder;
 
   private CameraConfiguration(final Builder builder) {
+    this.builder = builder;
     height = builder.height;
     width = builder.width;
     facing = builder.facing;
@@ -72,11 +74,11 @@ public class CameraConfiguration {
   }
 
   public static class Builder {
-    private int height = DEFAULT_HEIGHT;
-    private int width = DEFAULT_WIDTH;
+    private int height;
+    private int width;
     private int fps = DEFAULT_FPS;
     private int screenRotation = 90;
-    private int facing = Constants.FACING_BACK;
+    private int facing = -1;
     private Orientation orientation = DEFAULT_ORIENTATION;
     private FocusMode focusMode = DEFAULT_FOCUSMODE;
     private CameraCallback cameraCallback;

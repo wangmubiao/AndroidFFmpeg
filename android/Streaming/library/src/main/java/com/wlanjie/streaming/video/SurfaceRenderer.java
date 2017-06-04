@@ -7,22 +7,17 @@ import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.util.Log;
 
-import com.wlanjie.streaming.OpenGL;
-import com.wlanjie.streaming.camera.Effect;
-import com.wlanjie.streaming.configuration.VideoConfiguration;
-
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 /**
- * Created by caowu15 on 2017/5/22.
+ * Created by wlanjie on 2017/5/22.
  */
 
-public class SurfaceRenderer implements GLSurfaceView.Renderer {
+public abstract class SurfaceRenderer implements GLSurfaceView.Renderer {
 
   private SurfaceTexture mSurfaceTexture;
-  private int mSurfaceTextureId;
-  private final Effect mEffect;
+  int mSurfaceTextureId;
   private OnSurfaceListener mOnSurfaceListener;
   private OnRendererEncoderListener mOnRendererEncoderListener;
 
@@ -30,19 +25,10 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
 
   private float[] mSurfaceMatrix = new float[16];
 
-  private float[] mTransformMatrix = new float[16];
+  float[] mTransformMatrix = new float[16];
 
-  private final RendererScreen mRendererScreen;
-
-  private OpenGL mOpenGL = new OpenGL();
-
-  private EglCore mEglCore = new EglCore();
-
-  private WindowSurface mWindowSurface;
 
   public SurfaceRenderer(Context context, SurfaceTexture texture, int surfaceTextureId) {
-    mRendererScreen = new RendererScreen(context);
-    mEffect = new Effect(context);
     mSurfaceTexture = texture;
     mSurfaceTextureId = surfaceTextureId;
   }
@@ -57,8 +43,6 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
     GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
 
     GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-//    mEffect.init();
-//    mRendererScreen.init();
   }
 
   @Override
@@ -67,13 +51,7 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
       mOnSurfaceListener.onSurfaceChanged(gl, width, height);
     }
 
-//    mWindowSurface = new WindowSurface(mEglCore, mSurfaceTexture);
-//    mWindowSurface.makeCurrent();
-
-    mOpenGL.init(width, height);
-//    mEffect.onInputSizeChanged(width, height);
     GLES20.glViewport(0, 0, width, height);
-//    mEffect.onDisplaySizeChange(width, height);
 
     float outputAspectRatio = width > height ? (float) width / height : (float) height / width;
     float aspectRatio = outputAspectRatio / outputAspectRatio;
@@ -97,18 +75,15 @@ public class SurfaceRenderer implements GLSurfaceView.Renderer {
 
     mSurfaceTexture.getTransformMatrix(mSurfaceMatrix);
     Matrix.multiplyMM(mTransformMatrix, 0, mSurfaceMatrix, 0, mProjectionMatrix, 0);
-//    mEffect.setTextureTransformMatrix(mTransformMatrix);
-//    int textureId = mEffect.draw(mSurfaceTextureId);
-//    mRendererScreen.draw(textureId);
 
-    mOpenGL.setTextureTransformMatrix(mTransformMatrix);
-    int textureId = mOpenGL.draw(mSurfaceTextureId);
-//    mWindowSurface.swapBuffers();
+    int textureId = draw();
 
     if (mOnRendererEncoderListener != null) {
       mOnRendererEncoderListener.onRenderEncoder(textureId);
     }
   }
+
+  protected abstract int draw();
 
   public void setOnSurfaceListener(OnSurfaceListener l) {
     mOnSurfaceListener = l;

@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
 import com.wlanjie.streaming.camera.CameraView;
+import com.wlanjie.streaming.configuration.CameraConfiguration;
 import com.wlanjie.streaming.configuration.VideoConfiguration;
 
 public class MainActivity extends AppCompatActivity {
@@ -26,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
 
     mCameraView = (CameraView) findViewById(R.id.surface_view);
     mCameraView.setVideoConfiguration(VideoConfiguration.createDefault());
+    mCameraView.setCameraConfiguration(CameraConfiguration.createDefault());
     mCameraView.start("rtmp://192.168.1.102/live/livestream");
   }
 }

@@ -31,7 +31,7 @@ add_subdirectory(fdk-aac)
 #opengl
 add_subdirectory(opengl)
 
-file(GLOB WLANJIE_SOURCE audioencoder.cpp wlanjie_jni.cpp YuvConvert.cpp YuvFrame.cpp muxer.cpp)
+file(GLOB WLANJIE_SOURCE audioencoder.cpp wlanjie_jni.cpp h264encoder.cpp YuvConvert.cpp YuvFrame.cpp muxer.cpp)
 add_library(wlanjie SHARED ${WLANJIE_SOURCE})
 
 #link libyuv library
