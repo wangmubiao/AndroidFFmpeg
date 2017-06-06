@@ -31,9 +31,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture.OnFrameAvailableListener, SurfaceRenderer.OnSurfaceListener, SurfaceRenderer.OnRendererEncoderListener {
 
-  private SurfaceRenderer mSurfaceRenderer;
   private SurfaceTexture mSurfaceTexture;
-  private int mSurfaceTextureId;
   private LivingCamera mCamera;
   private Context mContext;
   private CameraConfiguration mCameraConfiguration;
@@ -51,7 +49,7 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
   }
 
   public void setVideoConfiguration(VideoConfiguration configuration) {
-//    mSurfaceRenderer.setEncoder(new HardEncoder());
+    mEncoder.setVideoConfiguration(configuration);
   }
 
   public void setCameraConfiguration(CameraConfiguration configuration) {
@@ -63,7 +61,7 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
     System.out.println("surface init");
     int[] textures = new int[1];
     GLES20.glGenTextures(1, textures, 0);
-    mSurfaceTextureId = textures[0];
+    int mSurfaceTextureId = textures[0];
     mSurfaceTexture = new SurfaceTexture(mSurfaceTextureId);
     mSurfaceTexture.setOnFrameAvailableListener(this);
 
@@ -78,7 +76,7 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
       mCamera = new Camera21(mContext, configuration);
     }
 
-    mSurfaceRenderer = new SoftSurfaceRenderer(getContext(), mSurfaceTexture, mSurfaceTextureId);
+    SurfaceRenderer mSurfaceRenderer = new SoftSurfaceRenderer(getContext(), mSurfaceTexture, mSurfaceTextureId);
     mSurfaceRenderer.setOnSurfaceListener(this);
     mSurfaceRenderer.setOnRendererEncoderListener(this);
 
