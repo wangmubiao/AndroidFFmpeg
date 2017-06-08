@@ -14,12 +14,22 @@ namespace wlanjie {
         H264encoder();
         ~H264encoder();
 
+        void setFrameSize(int width, int height);
+
         bool openH264Encoder();
 
         void closeH264Encoder();
 
+        void startEncoder(uint8_t *yData, int yStride, uint8_t *uData, int uStride, uint8_t *vData, int vStride);
+
+    private:
+        SEncParamExt createEncoderParams() const;
+
     private:
         ISVCEncoder *encoder;
+
+        int frameWidth;
+        int frameHeight;
     };
 
 }

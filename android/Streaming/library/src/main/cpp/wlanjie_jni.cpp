@@ -12,9 +12,10 @@
 #include "srs_librtmp.hpp"
 #include "muxer.h"
 #include "log.h"
-// #include "videoencoder.h"
+#include "h264encoder.h"
 #include "audioencoder.h"
 #include "opengl/opengl.h"
+#include "libyuv.h"
 
 #ifndef NELEM
 #define NELEM(x) ((int) (sizeof(x) / sizeof((x)[0])))
@@ -40,7 +41,7 @@ wlanjie::OpenGL *openGL;
 
 std::queue<Frame> q;
 
-// wlanjie::VideoEncode videoEncode;
+wlanjie::H264encoder h264encoder;
 AudioEncode audioEncode;
 srs_rtmp_t rtmp;
 bool is_stop = false;
@@ -175,10 +176,11 @@ jbyteArray Android_JNI_rgbaToNV12(JNIEnv* env, jobject object, jbyteArray frame,
 
 jboolean Android_JNI_openH264Encoder(JNIEnv* env, jobject object) {
     // return (jboolean) (videoEncode.open_h264_encode() >= 0 ? JNI_TRUE : JNI_FALSE);
-    return false;
+    return (jboolean) h264encoder.openH264Encoder();
 }
 
 void Android_JNI_closeH264Encoder(JNIEnv* env, jobject object) {
+    h264encoder.closeH264Encoder();
     // videoEncode.close_h264_encode();
 }
 
@@ -198,26 +200,27 @@ jint Android_JNI_rgbaEncodeToH264(JNIEnv* env, jobject object, jbyteArray rgba_f
 }
 
 void Android_JNI_encoderH264(JNIEnv *env, jobject object) {
-    // unsigned char *buffer = openGL->getBuffer();
-    //
-    // int width = openGL->getWidth();
-    // int height = openGL->getHeight();
-    // int ySize = openGL->getWidth() * openGL->getHeight();
-    // uint8_t *data = (uint8_t *) malloc((size_t) (ySize * 3 / 2));
-    // uint8_t *u = data + ySize;
-    // uint8_t *v = u + ySize / 4;
-    // libyuv::ConvertToI420(buffer, ySize, data, width, u, width / 2, v, width / 2, 0, 0, width, height, width, height, libyuv::kRotate0, libyuv::FOURCC_BPP_RGBA);
-    // int size = videoEncode.x264_encode(data, u, v, width);
-    // uint8_t *h264 = videoEncode.get_h264();
-    //
-    // char *frame_data = (char *) malloc((size_t) size);
-    // memcpy(frame_data, h264, size);
-    // Frame f;
-    // f.data = frame_data;
-    // f.size = size;
-    // f.pts = (int) time(NULL) / 1000;
-    // f.packet_type = VIDEO_TYPE;
-    // q.push(f);
+     unsigned char *buffer = openGL->getBuffer();
+
+     int width = openGL->getWidth();
+     int height = openGL->getHeight();
+     int ySize = openGL->getWidth() * openGL->getHeight();
+     uint8_t *data = (uint8_t *) malloc((size_t) (ySize * 3 / 2));
+     uint8_t *u = data + ySize;
+     uint8_t *v = u + ySize / 4;
+     libyuv::ConvertToI420(buffer, ySize, data, width, u, width / 2, v, width / 2, 0, 0, width, height, width, height, libyuv::kRotate0, libyuv::FOURCC_BPP_RGBA);
+//     int size = videoEncode.x264_encode(data, u, v, width);
+//     uint8_t *h264 = videoEncode.get_h264();
+    h264encoder.startEncoder(data, ySize, u, width / 2, v, width / 2);
+
+//     char *frame_data = (char *) malloc((size_t) size);
+//     memcpy(frame_data, h264, size);
+//     Frame f;
+//     f.data = frame_data;
+//     f.size = size;
+//     f.pts = (int) time(NULL) / 1000;
+//     f.packet_type = VIDEO_TYPE;
+//     q.push(f);
 }
 
 jboolean Android_JNI_openAacEncode(JNIEnv *env, jobject object, jint channels, jint sample_rate, jint bitrate) {
@@ -315,13 +318,26 @@ void Android_JNI_opengl_init(JNIEnv *env, jobject object, jint width, jint heigh
     // videoEncode.setEncodeBitrate(800 * 1000);
 //    videoEncode.setEncodePreset("veryfast");
 
+    h264encoder.setFrameSize(width, height);
     openGL->init(width, height);
     Android_JNI_openH264Encoder(env, object);
 }
 
 jint Android_JNI_opengl_draw(JNIEnv *env, jobject object, jint inputTextureId) {
     int textureId = openGL->draw(inputTextureId);
-//    unsigned char* buffer = openGL->getBuffer();
+    unsigned char* buffer = openGL->getBuffer();
+//    unsigned char *buffer = openGL->getBuffer();
+
+    int width = openGL->getWidth();
+    int height = openGL->getHeight();
+    int ySize = openGL->getWidth() * openGL->getHeight();
+    uint8_t *data = (uint8_t *) malloc((size_t) (ySize * 3 / 2));
+    uint8_t *u = data + ySize;
+    uint8_t *v = u + ySize / 4;
+    libyuv::ConvertToI420(buffer, ySize, data, width, u, width / 2, v, width / 2, 0, 0, width, height, width, height, libyuv::kRotate0, libyuv::FOURCC_BPP_RGBA);
+//     int size = videoEncode.x264_encode(data, u, v, width);
+//     uint8_t *h264 = videoEncode.get_h264();
+    h264encoder.startEncoder(data, ySize, u, width / 2, v, width / 2);
     return textureId;
 }
 
