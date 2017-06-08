@@ -72,7 +72,6 @@ void wlanjie::Effect::init(int width, int height) {
 }
 
 GLuint wlanjie::Effect::draw(int textureId) {
-    LOGE("effect draw");
 //    glViewport(0, 0, width, height);
     glUseProgram(programId);
     GLint position = glGetAttribLocation(programId, "position");

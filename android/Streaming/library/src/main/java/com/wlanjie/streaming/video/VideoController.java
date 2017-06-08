@@ -58,6 +58,6 @@ public class VideoController implements OnVideoEncoderListener {
     buffer.limit(bufferInfo.offset + bufferInfo.size);
     byte[] h264 = new byte[bufferInfo.size];
     buffer.get(h264, 0, bufferInfo.size);
-    mRtmp.muxerH264(h264, bufferInfo.size, (int) (bufferInfo.presentationTimeUs / 1000));
+    mRtmp.writeVideo(bufferInfo.presentationTimeUs / 1000, h264);
   }
 }

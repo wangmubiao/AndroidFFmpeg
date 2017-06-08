@@ -34,20 +34,6 @@ public class Rtmp {
   public native int writeVideo(long timestamp, byte[] data);
 
   /**
-   * muxer flv h264 data
-   * @param data h264 data
-   * @param pts pts
-   */
-  public native void muxerH264(byte[] data, int size, int pts);
-
-  /**
-   * muxer flv aac data
-   * @param data aac data
-   * @param pts pts
-   */
-  public native void muxerAac(byte[] data, int size, int pts);
-
-  /**
    * destroy rtmp resources {@link #connect(String url)}
    */
   public native void destroy();

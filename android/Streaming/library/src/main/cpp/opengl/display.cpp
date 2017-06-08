@@ -60,7 +60,6 @@ void wlanjie::Display::attachShaderSource(const char *vertexSource, const char *
 }
 
 void wlanjie::Display::draw(int textureId) {
-    LOGE("display draw");
     glUseProgram(programId);
     GLint position = glGetAttribLocation(programId, "position");
     glEnableVertexAttribArray((GLuint) position);
