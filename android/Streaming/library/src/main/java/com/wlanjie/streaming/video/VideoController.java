@@ -33,14 +33,14 @@ public class VideoController implements OnVideoEncoderListener {
   }
 
   public void start(final String rtmpUrl) {
-    mRtmp.connect(rtmpUrl);
-    new Thread(){
-      @Override
-      public void run() {
-        super.run();
-        mRtmp.startPublish();
-      }
-    }.start();
+//    mRtmp.connect(rtmpUrl);
+//    new Thread(){
+//      @Override
+//      public void run() {
+//        super.run();
+//        mRtmp.startPublish();
+//      }
+//    }.start();
 //    mEncoder.prepareEncoder();
 //    mEncoder.startEncoder();
   }

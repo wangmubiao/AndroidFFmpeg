@@ -23,6 +23,7 @@ public class SoftEncoder implements Encoder {
 
   @Override
   public void prepareEncoder() {
+    rtmp.connect("rtmp://www.ossrs.net:1935/live/livestream");
     openH264Encoder();
   }
 

@@ -232,7 +232,7 @@ void wlanjie::Memtransfer::toGPU(const unsigned char *buf) {
 }
 
 void wlanjie::Memtransfer::fromGPU(unsigned char *buf, int textureId) {
-// bind the output texture
+    // bind the output texture
     glBindTexture(GL_TEXTURE_2D, textureId);
 
     // activate the image KHR for the output

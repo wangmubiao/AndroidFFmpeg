@@ -20,8 +20,9 @@ namespace wlanjie {
 
         void closeH264Encoder();
 
-        void startEncoder(uint8_t *yData, int yStride, uint8_t *uData, int uStride, uint8_t *vData, int vStride);
+        uint8_t* startEncoder(uint8_t *yData, int yStride, uint8_t *uData, int uStride, uint8_t *vData, int vStride);
 
+        int getEncoderImageLength();
     private:
         SEncParamExt createEncoderParams() const;
 
@@ -30,6 +31,7 @@ namespace wlanjie {
 
         int frameWidth;
         int frameHeight;
+        int encoded_image_length;
     };
 
 }

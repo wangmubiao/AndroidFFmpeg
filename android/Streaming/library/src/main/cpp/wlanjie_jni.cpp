@@ -46,6 +46,7 @@ srs_rtmp_t rtmp;
 bool is_stop = false;
 
 void Android_JNI_startPublish(JNIEnv *env, jobject object) {
+    LOGE("Android_JNI_startPublish");
     while (!is_stop) {
         while (!q.empty()) {
             Frame frame = q.front();
@@ -173,16 +174,27 @@ jint Android_JNI_opengl_draw(JNIEnv *env, jobject object, jint inputTextureId) {
     int textureId = openGL->draw(inputTextureId);
     unsigned char* buffer = openGL->getBuffer();
 
-//    int width = openGL->getWidth();
-//    int height = openGL->getHeight();
-//    int ySize = openGL->getWidth() * openGL->getHeight();
-//    uint8_t *data = (uint8_t *) malloc((size_t) (ySize * 3 / 2));
-//    uint8_t *u = data + ySize;
-//    uint8_t *v = u + ySize / 4;
-//    libyuv::ConvertToI420(buffer, ySize, data, width, u, width / 2, v, width / 2, 0, 0, width, height, width, height, libyuv::kRotate0, libyuv::FOURCC_BPP_RGBA);
-//     int size = videoEncode.x264_encode(data, u, v, width);
-//     uint8_t *h264 = videoEncode.get_h264();
-//    h264encoder.startEncoder(data, ySize, u, width / 2, v, width / 2);
+    int width = openGL->getWidth();
+    int height = openGL->getHeight();
+    size_t ySize = (size_t) (openGL->getWidth() * openGL->getHeight());
+    uint8_t *y = new uint8_t[ySize * 3 / 2];
+    uint8_t *u = y + ySize;
+    uint8_t *v = u + ySize / 4;
+    libyuv::ConvertToI420(buffer, ySize, y, width, u, width / 2, v, width / 2, 0, 0, width, height, width, height, libyuv::kRotate0, libyuv::FOURCC_BPP_RGBA);
+    uint8_t *encoded_image_buffer = h264encoder.startEncoder(y, ySize, u, width / 2, v, width / 2);
+
+//    char *frame_data = (char *) malloc((size_t) h264encoder.getEncoderImageLength());
+//    char *frame_data = new char[h264encoder.getEncoderImageLength()];
+//    memcpy(frame_data, encoded_image_buffer, (size_t) h264encoder.getEncoderImageLength());
+//    Frame f;
+//    f.data = frame_data;
+//    f.size = h264encoder.getEncoderImageLength();
+//    f.pts = (int) time(NULL) / 1000;
+//    f.packet_type = VIDEO_TYPE;
+//    q.push(f);
+
+    free(encoded_image_buffer);
+    free(y);
     return textureId;
 }
 
