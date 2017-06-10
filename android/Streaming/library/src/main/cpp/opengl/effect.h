@@ -31,6 +31,8 @@ namespace wlanjie {
 
         unsigned char* getBuffer();
 
+        unsigned char* getBuffer(unsigned char* buffer);
+
         void release();
 
     private:

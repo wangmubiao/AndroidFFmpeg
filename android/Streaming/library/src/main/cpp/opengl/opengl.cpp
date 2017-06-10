@@ -58,3 +58,7 @@ int wlanjie::OpenGL::getWidth() {
 int wlanjie::OpenGL::getHeight() {
     return height;
 }
+
+unsigned char *wlanjie::OpenGL::getBuffer(unsigned char *buffer) {
+    return effect->getBuffer(buffer);
+}

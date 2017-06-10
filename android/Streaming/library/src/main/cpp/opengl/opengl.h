@@ -30,6 +30,8 @@ namespace wlanjie {
 
         unsigned char* getBuffer();
 
+        unsigned char* getBuffer(unsigned char *buffer);
+
         int getWidth();
 
         int getHeight();

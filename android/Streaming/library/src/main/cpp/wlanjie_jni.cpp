@@ -45,6 +45,10 @@ AudioEncode audioEncode;
 srs_rtmp_t rtmp;
 bool is_stop = false;
 
+static jobject outputBuffer;
+static jlong outputPixelBytes = 0;
+static unsigned char *outputPixelBufferData = NULL;
+
 void Android_JNI_startPublish(JNIEnv *env, jobject object) {
     LOGE("Android_JNI_startPublish");
     while (!is_stop) {
@@ -165,6 +169,11 @@ void Android_JNI_destroy(JNIEnv *env, jobject object) {
 }
 
 void Android_JNI_opengl_init(JNIEnv *env, jobject object, jint width, jint height) {
+    outputPixelBytes = width * height * 4;
+    outputPixelBufferData = new unsigned char[outputPixelBytes];
+    outputBuffer = env->NewDirectByteBuffer(outputPixelBufferData, outputPixelBytes);
+    outputBuffer = env->NewGlobalRef(outputBuffer);
+
     h264encoder.setFrameSize(width, height);
     openGL->init(width, height);
     Android_JNI_openH264Encoder(env, object);
@@ -174,27 +183,30 @@ jint Android_JNI_opengl_draw(JNIEnv *env, jobject object, jint inputTextureId) {
     int textureId = openGL->draw(inputTextureId);
     unsigned char* buffer = openGL->getBuffer();
 
-    int width = openGL->getWidth();
-    int height = openGL->getHeight();
-    size_t ySize = (size_t) (openGL->getWidth() * openGL->getHeight());
-    uint8_t *y = new uint8_t[ySize * 3 / 2];
-    uint8_t *u = y + ySize;
-    uint8_t *v = u + ySize / 4;
-    libyuv::ConvertToI420(buffer, ySize, y, width, u, width / 2, v, width / 2, 0, 0, width, height, width, height, libyuv::kRotate0, libyuv::FOURCC_BPP_RGBA);
-    uint8_t *encoded_image_buffer = h264encoder.startEncoder(y, ySize, u, width / 2, v, width / 2);
+//    int width = openGL->getWidth();
+//    int height = openGL->getHeight();
+//    size_t ySize = (size_t) (openGL->getWidth() * openGL->getHeight());
+//    uint8_t *y = new uint8_t[ySize * 3 / 2];
+//    uint8_t *u = y + ySize;
+//    uint8_t *v = u + ySize / 4;
+//    libyuv::ConvertToI420(buffer, ySize, y, width, u, width / 2, v, width / 2, 0, 0, width, height, width, height, libyuv::kRotate0, libyuv::FOURCC_RGBA);
+//    uint8_t *encoded_image_buffer = h264encoder.startEncoder(y, ySize, u, width / 2, v, width / 2);
+//
+    uint8_t *encoded_image_buffer = h264encoder.encoder((char *) buffer);
 
-//    char *frame_data = (char *) malloc((size_t) h264encoder.getEncoderImageLength());
-//    char *frame_data = new char[h264encoder.getEncoderImageLength()];
-//    memcpy(frame_data, encoded_image_buffer, (size_t) h264encoder.getEncoderImageLength());
-//    Frame f;
-//    f.data = frame_data;
-//    f.size = h264encoder.getEncoderImageLength();
-//    f.pts = (int) time(NULL) / 1000;
-//    f.packet_type = VIDEO_TYPE;
-//    q.push(f);
+//    if (encoded_image_buffer != NULL && h264encoder.getEncoderImageLength() > 0) {
+//        char *frame_data = new char[h264encoder.getEncoderImageLength()];
+//        memcpy(frame_data, encoded_image_buffer, (size_t) h264encoder.getEncoderImageLength());
+//        Frame f;
+//        f.data = frame_data;
+//        f.size = h264encoder.getEncoderImageLength();
+//        f.pts = (int) time(NULL) / 1000;
+//        f.packet_type = VIDEO_TYPE;
+//        q.push(f);
+//
+//        free(encoded_image_buffer);
+//    }
 
-    free(encoded_image_buffer);
-    free(y);
     return textureId;
 }
 
@@ -208,8 +220,8 @@ void Android_JNI_opengl_setInputPixels(JNIEnv *env, jobject object, jbyteArray p
 }
 
 jobject Android_JNI_opengl_getOutputPixels(JNIEnv *env, jobject object) {
-//    openGL
-    return NULL;
+    openGL->getBuffer(outputPixelBufferData);
+    return outputBuffer;
 }
 
 void Android_JNI_opengl_setTextureTransformMatrix(JNIEnv *env, jobject object, jfloatArray matrix) {
@@ -220,6 +232,13 @@ void Android_JNI_opengl_setTextureTransformMatrix(JNIEnv *env, jobject object, j
 
 void Android_JNI_opengl_release(JNIEnv *env, jobject object) {
     openGL->release();
+    if (outputBuffer && outputPixelBufferData) {
+        env->DeleteGlobalRef(outputBuffer);
+        delete outputPixelBufferData;
+
+        outputBuffer = NULL;
+        outputPixelBufferData = NULL;
+    }
 }
 
 static JNINativeMethod soft_encoder_methods[] = {

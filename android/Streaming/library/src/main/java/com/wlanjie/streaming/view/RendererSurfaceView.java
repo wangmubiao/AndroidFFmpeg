@@ -54,7 +54,6 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
 
   public void setCameraConfiguration(CameraConfiguration configuration) {
     this.mCameraConfiguration = configuration;
-    System.out.println("setCameraConfiguration");
   }
 
   public void init(CameraConfiguration configuration) {
@@ -68,13 +67,13 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
     if (configuration == null) {
       configuration = CameraConfiguration.createDefault();
     }
-    if (Build.VERSION.SDK_INT < 21) {
+//    if (Build.VERSION.SDK_INT < 21) {
       mCamera = new Camera9(configuration);
-    } else if (Build.VERSION.SDK_INT < 23) {
-      mCamera = new Camera21(mContext, configuration);
-    } else {
-      mCamera = new Camera21(mContext, configuration);
-    }
+//    } else if (Build.VERSION.SDK_INT < 23) {
+//      mCamera = new Camera21(mContext, configuration);
+//    } else {
+//      mCamera = new Camera21(mContext, configuration);
+//    }
 
     SurfaceRenderer mSurfaceRenderer = new SoftSurfaceRenderer(getContext(), mSurfaceTexture, mSurfaceTextureId);
     mSurfaceRenderer.setOnSurfaceListener(this);

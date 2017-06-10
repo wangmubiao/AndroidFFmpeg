@@ -136,6 +136,15 @@ void wlanjie::Effect::setTextureTransformMatrix(GLfloat *textureTransformMatrix)
 }
 
 unsigned char *wlanjie::Effect::getBuffer() {
+    glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
     memtransfer->fromGPU(buffer, textureId);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     return buffer;
+}
+
+unsigned char *wlanjie::Effect::getBuffer(unsigned char *buffer) {
+    glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
+    memtransfer->fromGPU(buffer, textureId);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    return nullptr;
 }
