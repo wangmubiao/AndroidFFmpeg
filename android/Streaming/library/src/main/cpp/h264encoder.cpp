@@ -26,17 +26,9 @@ wlanjie::H264encoder::~H264encoder() {
 
 bool wlanjie::H264encoder::openH264Encoder() {
     WelsCreateSVCEncoder(&encoder_);
-//    SEncParamExt encoder_params = createEncoderParams();
-    SEncParamBase encoder_params;
-    memset (&encoder_params, 0, sizeof (SEncParamBase));
-    encoder_params.iUsageType = CAMERA_VIDEO_REAL_TIME;
-    encoder_params.fMaxFrameRate = 30;
-    encoder_params.iPicWidth = frameWidth;
-    encoder_params.iPicHeight = frameHeight;
-    encoder_params.iTargetBitrate = 5000000;
-    encoder_params.iRCMode = RC_BITRATE_MODE;
+    SEncParamExt encoder_params = createEncoderParams();
     int ret = 0;
-    if ((ret = encoder_->Initialize(&encoder_params)) != 0) {
+    if ((ret = encoder_->InitializeExt(&encoder_params)) != 0) {
         LOGE("initial h264 error = %d", ret);
         return false;
     }
@@ -75,51 +67,33 @@ void wlanjie::H264encoder::closeH264Encoder() {
 }
 
 SEncParamExt wlanjie::H264encoder::createEncoderParams() const {
-//    SEncParamExt encoder_params;
-//    encoder->GetDefaultParams(&encoder_params);
-//    encoder_params.iUsageType = CAMERA_VIDEO_REAL_TIME;
-//    encoder_params.iPicWidth = frameWidth;
-//    encoder_params.iPicHeight = frameHeight;
-//    // uses bit/s kbit/s
-//    encoder_params.iTargetBitrate = 800 * 1000;
-//    // max bit/s
-////    encoder_params.iMaxBitrate = 1300 * 1000;
-////    encoder_params.iRCMode = RC_BITRATE_MODE;
-//    //TODO
-//    encoder_params.fMaxFrameRate = 24;
-////    TODO
-//    encoder_params.bEnableFrameSkip = true;
-//    //TODO
-////    encoder_params.uiIntraPeriod = 2;
-////    encoder_params.uiMaxNalSize = 0;
-////    encoder_params.iMultipleThreadIdc = 1;
-////    encoder_params.sSpatialLayers[0].iVideoHeight = 640;
-////    encoder_params.sSpatialLayers[0].iVideoWidth = 480;
-////    encoder_params.sSpatialLayers[0].fFrameRate = 24;
-////    encoder_params.sSpatialLayers[0].iSpatialBitrate = 0;
-////    encoder_params.sSpatialLayers[0].iMaxSpatialBitrate = 0;
-////    encoder_params.sSpatialLayers[0].sSliceArgument.uiSliceMode = SM_SINGLE_SLICE;
-//    encoder_params.eSpsPpsIdStrategy = CONSTANT_ID;
-//    return encoder_params;
-
-    SEncParamExt param;
-    encoder_->GetDefaultParams (&param);
-    param.iUsageType = CAMERA_VIDEO_REAL_TIME;
-    param.fMaxFrameRate = 30;
-    param.iPicWidth = frameWidth;
-    param.iPicHeight = frameHeight;
-    param.iTargetBitrate = 5000000;
-    param.iRCMode = RC_BITRATE_MODE;
-//    param.bEnableDenoise = true;
-//    param.bEnableFrameSkip = true;
-//    param.iSpatialLayerNum = layers;
-//    param.iMultipleThreadIdc = 2;
-//    param.sSpatialLayers[0].iVideoWidth = 640;
-//    param.sSpatialLayers[0].iVideoHeight = 480;
-//    param.sSpatialLayers[0].fFrameRate = 24;
-//    param.sSpatialLayers[0].iSpatialBitrate = param.iTargetBitrate;
-//    param.iTargetBitrate *= param.iSpatialLayerNum;
-    return param;
+    SEncParamExt encoder_params;
+    encoder_->GetDefaultParams(&encoder_params);
+    encoder_params.iUsageType = CAMERA_VIDEO_REAL_TIME;
+    encoder_params.iPicWidth = frameWidth;
+    encoder_params.iPicHeight = frameHeight;
+    // uses bit/s kbit/s
+    encoder_params.iTargetBitrate = 800 * 1000;
+    // max bit/s
+    encoder_params.iMaxBitrate = 1300 * 1000;
+    encoder_params.iRCMode = RC_BITRATE_MODE;
+    encoder_params.fMaxFrameRate = 30;
+    encoder_params.bEnableFrameSkip = true;
+    encoder_params.uiIntraPeriod = 2;
+    encoder_params.uiMaxNalSize = 0;
+    encoder_params.iTemporalLayerNum = 3;
+    encoder_params.iSpatialLayerNum = 1;
+    encoder_params.bEnableLongTermReference = 0;
+    encoder_params.bEnableSceneChangeDetect = 0;
+    encoder_params.iMultipleThreadIdc = 1;
+    encoder_params.sSpatialLayers[0].iVideoHeight = 640;
+    encoder_params.sSpatialLayers[0].iVideoWidth = 360;
+    encoder_params.sSpatialLayers[0].fFrameRate = 30;
+    encoder_params.sSpatialLayers[0].iSpatialBitrate = 800 * 1000;
+//    encoder_params.sSpatialLayers[0].iMaxSpatialBitrate = 0;
+    encoder_params.sSpatialLayers[0].sSliceArgument.uiSliceMode = SM_FIXEDSLCNUM_SLICE;
+//    encoder_params.eSpsPpsIdStrategy = SPS_LISTING;
+    return encoder_params;
 }
 
 uint8_t* wlanjie::H264encoder::startEncoder(uint8_t *yData, int yStride, uint8_t *uData, int uStride, uint8_t *vData, int vStride) {
@@ -202,7 +176,7 @@ int wlanjie::H264encoder::getEncoderImageLength() {
 
 uint8_t *wlanjie::H264encoder::encoder(char *rgba) {
     _sourcePicture.uiTimeStamp = time(NULL) / 1000;
-    libyuv::RGBAToI420((const uint8 *) rgba + (frameWidth * 4), frameWidth * 4,
+    libyuv::ABGRToI420((const uint8 *) rgba, frameWidth * 4,
                        _sourcePicture.pData[0], _sourcePicture.iStride[0],
                        _sourcePicture.pData[1], _sourcePicture.iStride[1],
                        _sourcePicture.pData[2], _sourcePicture.iStride[2],
@@ -220,7 +194,7 @@ uint8_t *wlanjie::H264encoder::encoder(char *rgba) {
             }
             uint8_t *encoded_image_buffer = new uint8_t[1024 * 1024];
             encoded_image_length = len;
-            LOGE("encoded_image_length = %d", encoded_image_length);
+            int image_length = 0;
             for (int layer = 0; layer < info.iLayerNum; ++layer) {
                 SLayerBSInfo layerInfo = info.sLayerInfo[layer];
                 int layerSize = 0;
@@ -228,7 +202,8 @@ uint8_t *wlanjie::H264encoder::encoder(char *rgba) {
                     layerSize += layerInfo.pNalLengthInByte[nal];
                 }
                 _outputStream.write((const char *) layerInfo.pBsBuf, layerSize);
-//                memcpy(encoded_image_buffer, layerInfo.pBsBuf, layerSize);
+                memcpy(encoded_image_buffer + image_length, layerInfo.pBsBuf, layerSize);
+                image_length += layerSize;
             }
             return encoded_image_buffer;
         }

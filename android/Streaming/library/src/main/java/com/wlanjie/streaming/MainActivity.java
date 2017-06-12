@@ -65,14 +65,14 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     mEglCore = new EglCore();
 
-//    new Thread(){
-//      @Override
-//      public void run() {
-//        super.run();
-//        mRtmp.connect("rtmp://www.ossrs.net:1935/live/demo");
-//        mRtmp.startPublish();
-//      }
-//    }.start();
+    new Thread(){
+      @Override
+      public void run() {
+        super.run();
+        mRtmp.connect("rtmp://www.ossrs.net:1935/live/test");
+        mRtmp.startPublish();
+      }
+    }.start();
   }
 
   @Override
@@ -167,10 +167,10 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     mOpenGL.draw(mSurfaceTextureId);
     ByteBuffer byteBuffer = mOpenGL.getOutputPixels();
 
-    if (count < 5) {
-      saveFrame(byteBuffer);
-    }
-    ++count;
+//    if (count < 5) {
+//      saveFrame(byteBuffer);
+//    }
+//    ++count;
 
     mWindowSurface.swapBuffers();
   }
@@ -184,7 +184,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
       } catch (FileNotFoundException e) {
         e.printStackTrace();
       }
-      Bitmap bmp = Bitmap.createBitmap(720, 1280, Bitmap.Config.ARGB_8888);
+      Bitmap bmp = Bitmap.createBitmap(1280, 768, Bitmap.Config.ARGB_8888);
       bmp.copyPixelsFromBuffer(buf);
 
       bmp.compress(Bitmap.CompressFormat.PNG, 90, bos);

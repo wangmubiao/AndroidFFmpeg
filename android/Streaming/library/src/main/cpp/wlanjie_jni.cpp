@@ -54,6 +54,7 @@ void Android_JNI_startPublish(JNIEnv *env, jobject object) {
     while (!is_stop) {
         while (!q.empty()) {
             Frame frame = q.front();
+            LOGE("q.size = %d", q.size());
             q.pop();
             if (frame.packet_type == VIDEO_TYPE) {
                 int ret = srs_h264_write_raw_frames(rtmp, frame.data, frame.size, frame.pts, frame.pts);
@@ -194,18 +195,19 @@ jint Android_JNI_opengl_draw(JNIEnv *env, jobject object, jint inputTextureId) {
 //
     uint8_t *encoded_image_buffer = h264encoder.encoder((char *) buffer);
 
-//    if (encoded_image_buffer != NULL && h264encoder.getEncoderImageLength() > 0) {
-//        char *frame_data = new char[h264encoder.getEncoderImageLength()];
-//        memcpy(frame_data, encoded_image_buffer, (size_t) h264encoder.getEncoderImageLength());
-//        Frame f;
-//        f.data = frame_data;
-//        f.size = h264encoder.getEncoderImageLength();
-//        f.pts = (int) time(NULL) / 1000;
-//        f.packet_type = VIDEO_TYPE;
-//        q.push(f);
-//
-//        free(encoded_image_buffer);
-//    }
+    if (encoded_image_buffer != NULL && h264encoder.getEncoderImageLength() > 0) {
+        LOGE("encoded_image_buffer_length = %d", h264encoder.getEncoderImageLength());
+        char *frame_data = new char[h264encoder.getEncoderImageLength()];
+        memcpy(frame_data, encoded_image_buffer, (size_t) h264encoder.getEncoderImageLength());
+        Frame f;
+        f.data = frame_data;
+        f.size = h264encoder.getEncoderImageLength();
+        f.pts = (int) time(NULL) / 1000;
+        f.packet_type = VIDEO_TYPE;
+        q.push(f);
+
+        free(encoded_image_buffer);
+    }
 
     return textureId;
 }

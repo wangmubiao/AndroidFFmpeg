@@ -73,6 +73,7 @@ void wlanjie::Effect::init(int width, int height) {
 
 GLuint wlanjie::Effect::draw(int textureId) {
 //    glViewport(0, 0, width, height);
+    glClear(GL_COLOR_BUFFER_BIT);
     glUseProgram(programId);
     GLint position = glGetAttribLocation(programId, "position");
     glEnableVertexAttribArray((GLuint) position);
