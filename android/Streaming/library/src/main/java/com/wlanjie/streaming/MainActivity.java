@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
   float[] mTransformMatrix = new float[16];
   private Rtmp mRtmp = new Rtmp();
+  private long time;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -65,11 +66,12 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     mEglCore = new EglCore();
 
+    time = System.nanoTime() / 1000;
     new Thread(){
       @Override
       public void run() {
         super.run();
-        mRtmp.connect("rtmp://www.ossrs.net:1935/live/test");
+        mRtmp.connect("rtmp://192.168.0.106/live/test");
         mRtmp.startPublish();
       }
     }.start();
@@ -164,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     mSurfaceTexture.getTransformMatrix(mSurfaceMatrix);
     Matrix.multiplyMM(mTransformMatrix, 0, mSurfaceMatrix, 0, mProjectionMatrix, 0);
     mOpenGL.setTextureTransformMatrix(mTransformMatrix);
-    mOpenGL.draw(mSurfaceTextureId);
+    mOpenGL.draw(mSurfaceTextureId, (int) (System.nanoTime() / 1000 - time));
     ByteBuffer byteBuffer = mOpenGL.getOutputPixels();
 
 //    if (count < 5) {

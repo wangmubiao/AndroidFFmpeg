@@ -147,7 +147,7 @@ public class SurfaceView extends android.view.SurfaceView implements SurfaceText
     mSurfaceTexture.getTransformMatrix(mSurfaceMatrix);
     Matrix.multiplyMM(mTransformMatrix, 0, mSurfaceMatrix, 0, mProjectionMatrix, 0);
     mOpenGL.setTextureTransformMatrix(mTransformMatrix);
-    mOpenGL.draw(mSurfaceTextureId);
+    mOpenGL.draw(mSurfaceTextureId, 0);
     mWindowSurface.swapBuffers();
   }
 

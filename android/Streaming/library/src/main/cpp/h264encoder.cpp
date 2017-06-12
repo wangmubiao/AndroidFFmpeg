@@ -79,89 +79,25 @@ SEncParamExt wlanjie::H264encoder::createEncoderParams() const {
     encoder_params.iRCMode = RC_BITRATE_MODE;
     encoder_params.fMaxFrameRate = 30;
     encoder_params.bEnableFrameSkip = true;
+    encoder_params.bEnableDenoise = true;
     encoder_params.uiIntraPeriod = 2;
-    encoder_params.uiMaxNalSize = 0;
+    encoder_params.uiMaxNalSize = 1500;
     encoder_params.iTemporalLayerNum = 3;
     encoder_params.iSpatialLayerNum = 1;
     encoder_params.bEnableLongTermReference = 0;
     encoder_params.bEnableSceneChangeDetect = 0;
-    encoder_params.iMultipleThreadIdc = 1;
+    encoder_params.iMultipleThreadIdc = 4;
     encoder_params.sSpatialLayers[0].iVideoHeight = 640;
     encoder_params.sSpatialLayers[0].iVideoWidth = 360;
     encoder_params.sSpatialLayers[0].fFrameRate = 30;
     encoder_params.sSpatialLayers[0].iSpatialBitrate = 800 * 1000;
 //    encoder_params.sSpatialLayers[0].iMaxSpatialBitrate = 0;
-    encoder_params.sSpatialLayers[0].sSliceArgument.uiSliceMode = SM_FIXEDSLCNUM_SLICE;
-//    encoder_params.eSpsPpsIdStrategy = SPS_LISTING;
+    encoder_params.sSpatialLayers[0].sSliceArgument.uiSliceMode = SM_SINGLE_SLICE;
+    encoder_params.eSpsPpsIdStrategy = CONSTANT_ID;
     return encoder_params;
 }
 
 uint8_t* wlanjie::H264encoder::startEncoder(uint8_t *yData, int yStride, uint8_t *uData, int uStride, uint8_t *vData, int vStride) {
-    SSourcePicture picture;
-    memset(&picture, 0, sizeof(SSourcePicture));
-    picture.iPicWidth = frameWidth;
-    picture.iPicHeight = frameHeight;
-    picture.iColorFormat = videoFormatI420;
-    picture.uiTimeStamp = time(NULL) / 1000;
-    picture.iStride[0] = picture.iPicWidth;
-    picture.iStride[1] = picture.iPicWidth >> 1;
-    picture.iStride[2] = picture.iPicWidth >> 1;
-    picture.pData[0] = yData;
-    picture.pData[1] = picture.pData[0] + picture.iPicWidth * picture.iPicHeight;
-    picture.pData[2] = picture.pData[1] + (picture.iPicWidth * picture.iPicHeight >> 2);
-
-    SFrameBSInfo info;
-    memset(&info, 0, sizeof(SFrameBSInfo));
-    int ret = encoder_->EncodeFrame(&picture, &info);
-    if (!ret) {
-//        size_t required_size = 0;
-//        size_t fragments_count = 0;
-//        for (int layer = 0; layer < info.iLayerNum; ++layer) {
-//            const SLayerBSInfo& layerInfo = info.sLayerInfo[layer];
-//            for (int nal = 0; nal < layerInfo.iNalCount; ++nal, ++fragments_count) {
-//                if (layerInfo.pNalLengthInByte[nal] == 0) {
-//                    continue;
-//                }
-//                required_size += layerInfo.pNalLengthInByte[nal];
-//            }
-//        }
-//        int half_width = (frameWidth + 1) >> 1;
-//        int half_height = (frameHeight + 1) >> 1;
-//        encoded_image_length = frameWidth * frameHeight + half_width * half_height * 2;
-//        if (encoded_image_length < required_size) {
-//
-//        }
-//        uint8_t *encoded_image_buffer = new uint8_t[required_size];
-//        int image_length = 0;
-//        for (int layer = 0; layer < info.iLayerNum; ++layer) {
-//            const SLayerBSInfo& layerInfo = info.sLayerInfo[layer];
-//            size_t layer_len = 0;
-//            for (int nal = 0; nal < layerInfo.iNalCount; ++nal) {
-//                layer_len += layerInfo.pNalLengthInByte[nal];
-//            }
-//            memcpy(encoded_image_buffer + image_length, layerInfo.pBsBuf, layer_len);
-//            image_length += layer_len;
-//        }
-//        encoded_image_length = image_length;
-//        return encoded_image_buffer;
-
-        uint8_t *encoded_image_buffer = new uint8_t[1024 * 1024];
-        int image_length = 0;
-        if (info.eFrameType != videoFrameTypeSkip) {
-            encoded_image_length = 0;
-            for (int layer = 0; layer < info.iLayerNum; ++layer) {
-                const SLayerBSInfo &layerInfo = info.sLayerInfo[layer];
-                for (int nal = 0; nal < layerInfo.iNalCount; ++nal) {
-                    encoded_image_length += layerInfo.pNalLengthInByte[nal];
-                }
-                LOGE("encoded_image_length = %d", encoded_image_length);
-                _outputStream.write((const char *) layerInfo.pBsBuf, encoded_image_length);
-//                memcpy(encoded_image_buffer, layerInfo.pBsBuf, encoded_image_length);
-//                image_length += encoded_image_length;
-            }
-        }
-        return encoded_image_buffer;
-    }
     return NULL;
 }
 
@@ -174,8 +110,13 @@ int wlanjie::H264encoder::getEncoderImageLength() {
     return encoded_image_length;
 }
 
-uint8_t *wlanjie::H264encoder::encoder(char *rgba) {
-    _sourcePicture.uiTimeStamp = time(NULL) / 1000;
+uint8_t *wlanjie::H264encoder::encoder(char *rgba, long pts) {
+    if (present_time_us == 0) {
+        present_time_us = time(NULL) / 1000;
+    }
+    LOGE("%d", time(NULL));
+//    _sourcePicture.uiTimeStamp = time(NULL) / 1000 - present_time_us;
+    _sourcePicture.uiTimeStamp = pts;
     libyuv::ABGRToI420((const uint8 *) rgba, frameWidth * 4,
                        _sourcePicture.pData[0], _sourcePicture.iStride[0],
                        _sourcePicture.pData[1], _sourcePicture.iStride[1],

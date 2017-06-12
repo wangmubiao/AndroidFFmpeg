@@ -180,7 +180,7 @@ void Android_JNI_opengl_init(JNIEnv *env, jobject object, jint width, jint heigh
     Android_JNI_openH264Encoder(env, object);
 }
 
-jint Android_JNI_opengl_draw(JNIEnv *env, jobject object, jint inputTextureId) {
+jint Android_JNI_opengl_draw(JNIEnv *env, jobject object, jint inputTextureId, jint pts) {
     int textureId = openGL->draw(inputTextureId);
     unsigned char* buffer = openGL->getBuffer();
 
@@ -193,7 +193,7 @@ jint Android_JNI_opengl_draw(JNIEnv *env, jobject object, jint inputTextureId) {
 //    libyuv::ConvertToI420(buffer, ySize, y, width, u, width / 2, v, width / 2, 0, 0, width, height, width, height, libyuv::kRotate0, libyuv::FOURCC_RGBA);
 //    uint8_t *encoded_image_buffer = h264encoder.startEncoder(y, ySize, u, width / 2, v, width / 2);
 //
-    uint8_t *encoded_image_buffer = h264encoder.encoder((char *) buffer);
+    uint8_t *encoded_image_buffer = h264encoder.encoder((char *) buffer, pts);
 
     if (encoded_image_buffer != NULL && h264encoder.getEncoderImageLength() > 0) {
         LOGE("encoded_image_buffer_length = %d", h264encoder.getEncoderImageLength());
@@ -259,7 +259,7 @@ static JNINativeMethod rtmp_methods[] = {
 
 static JNINativeMethod opengl_methods[] = {
         { "init",                   "(II)V",                    (void *) Android_JNI_opengl_init },
-        { "draw",                   "(I)I",                     (void *) Android_JNI_opengl_draw },
+        { "draw",                   "(II)I",                     (void *) Android_JNI_opengl_draw },
         { "setInputTexture",        "(I)V",                     (void *) Android_JNI_opengl_setInputTexture },
         { "setInputPixels",         "([B)V",                    (void *) Android_JNI_opengl_setInputPixels },
         { "getOutputPixels",        "()Ljava/nio/ByteBuffer;",  (void *) Android_JNI_opengl_getOutputPixels },

@@ -27,7 +27,7 @@ public class SoftSurfaceRenderer extends SurfaceRenderer {
   @Override
   protected int draw() {
     mOpenGL.setTextureTransformMatrix(mTransformMatrix);
-    int textureId = mOpenGL.draw(mSurfaceTextureId);
+    int textureId = mOpenGL.draw(mSurfaceTextureId, 0);
     return textureId;
   }
 }

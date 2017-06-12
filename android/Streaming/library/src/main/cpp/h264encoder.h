@@ -25,7 +25,7 @@ namespace wlanjie {
 
         uint8_t* startEncoder(uint8_t *yData, int yStride, uint8_t *uData, int uStride, uint8_t *vData, int vStride);
 
-        uint8_t* encoder(char *rgba);
+        uint8_t* encoder(char *rgba, long pts);
 
         int getEncoderImageLength();
     private:
@@ -40,6 +40,7 @@ namespace wlanjie {
         int frameWidth;
         int frameHeight;
         int encoded_image_length;
+        time_t present_time_us;
     };
 
 }
