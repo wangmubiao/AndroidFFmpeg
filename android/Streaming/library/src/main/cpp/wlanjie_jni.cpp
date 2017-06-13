@@ -15,6 +15,7 @@
 #include "audioencoder.h"
 #include "opengl/opengl.h"
 #include "libyuv.h"
+#include "VideoEncode.h"
 
 #ifndef NELEM
 #define NELEM(x) ((int) (sizeof(x) / sizeof((x)[0])))
@@ -40,11 +41,12 @@ wlanjie::OpenGL *openGL;
 
 std::queue<Frame> q;
 
-wlanjie::H264encoder h264encoder;
+//wlanjie::H264encoder h264encoder;
 AudioEncode audioEncode;
 srs_rtmp_t rtmp;
 bool is_stop = false;
 std::ofstream _outputStream;
+VideoEncode videoEncode;
 
 static jobject outputBuffer;
 static jlong outputPixelBytes = 0;
@@ -69,13 +71,13 @@ void Android_JNI_startPublish(JNIEnv *env, jobject object) {
 }
 
 jboolean Android_JNI_openH264Encoder(JNIEnv* env, jobject object) {
-    // return (jboolean) (videoEncode.open_h264_encode() >= 0 ? JNI_TRUE : JNI_FALSE);
-    return (jboolean) h264encoder.openH264Encoder();
+     return (jboolean) (videoEncode.open_h264_encode() >= 0 ? JNI_TRUE : JNI_FALSE);
+//    return (jboolean) h264encoder.openH264Encoder();
 }
 
 void Android_JNI_closeH264Encoder(JNIEnv* env, jobject object) {
-    h264encoder.closeH264Encoder();
-    // videoEncode.close_h264_encode();
+//    h264encoder.closeH264Encoder();
+     videoEncode.close_h264_encode();
 }
 
 void Android_JNI_encoderH264(JNIEnv *env, jobject object) {
@@ -90,7 +92,7 @@ void Android_JNI_encoderH264(JNIEnv *env, jobject object) {
      libyuv::ConvertToI420(buffer, ySize, data, width, u, width / 2, v, width / 2, 0, 0, width, height, width, height, libyuv::kRotate0, libyuv::FOURCC_BPP_RGBA);
 //     int size = videoEncode.x264_encode(data, u, v, width);
 //     uint8_t *h264 = videoEncode.get_h264();
-    h264encoder.startEncoder(data, ySize, u, width / 2, v, width / 2);
+//    h264encoder.startEncoder(data, ySize, u, width / 2, v, width / 2);
 
 //     char *frame_data = (char *) malloc((size_t) size);
 //     memcpy(frame_data, h264, size);
@@ -172,13 +174,14 @@ void Android_JNI_destroy(JNIEnv *env, jobject object) {
 }
 
 void Android_JNI_opengl_init(JNIEnv *env, jobject object, jint width, jint height) {
+    videoEncode.open_h264_encode();
     _outputStream.open("/sdcard/test.h264", std::ios_base::binary | std::ios_base::out);
     outputPixelBytes = width * height * 4;
     outputPixelBufferData = new unsigned char[outputPixelBytes];
     outputBuffer = env->NewDirectByteBuffer(outputPixelBufferData, outputPixelBytes);
     outputBuffer = env->NewGlobalRef(outputBuffer);
 
-    h264encoder.setFrameSize(width, height);
+//    h264encoder.setFrameSize(width, height);
     openGL->init(width, height);
     Android_JNI_openH264Encoder(env, object);
 }
@@ -196,21 +199,33 @@ jint Android_JNI_opengl_draw(JNIEnv *env, jobject object, jint inputTextureId, j
 //    libyuv::ConvertToI420(buffer, ySize, y, width, u, width / 2, v, width / 2, 0, 0, width, height, width, height, libyuv::kRotate0, libyuv::FOURCC_RGBA);
 //    uint8_t *encoded_image_buffer = h264encoder.startEncoder(y, ySize, u, width / 2, v, width / 2);
 //
-    uint8_t *encoded_image_buffer = h264encoder.encoder((char *) buffer, pts);
-
-    if (encoded_image_buffer != NULL && h264encoder.getEncoderImageLength() > 0) {
-        LOGE("encoded_image_buffer_length = %d", h264encoder.getEncoderImageLength());
-        char *frame_data = new char[h264encoder.getEncoderImageLength()];
-        memcpy(frame_data, encoded_image_buffer, (size_t) h264encoder.getEncoderImageLength());
+//    uint8_t *encoded_image_buffer = h264encoder.encoder((char *) buffer, pts);
+    int h264_size = videoEncode.rgba_encode_to_h264((char *) buffer, openGL->getWidth(), openGL->getHeight(), false, 0, pts);
+    if (h264_size > 0 && videoEncode.get_h264() != NULL) {
+        char *frame_data = new char[h264_size];
+        memcpy(frame_data, videoEncode.get_h264(), (size_t) h264_size);
         Frame f;
         f.data = frame_data;
-        f.size = h264encoder.getEncoderImageLength();
-        f.pts = (int) time(NULL) / 1000;
+        f.size = h264_size;
+        f.pts = pts;
         f.packet_type = VIDEO_TYPE;
         q.push(f);
-
-        free(encoded_image_buffer);
+//
     }
+
+//    if (encoded_image_buffer != NULL && h264encoder.getEncoderImageLength() > 0) {
+//        LOGE("encoded_image_buffer_length = %d", h264encoder.getEncoderImageLength());
+//        char *frame_data = new char[h264encoder.getEncoderImageLength()];
+//        memcpy(frame_data, encoded_image_buffer, (size_t) h264encoder.getEncoderImageLength());
+//        Frame f;
+//        f.data = frame_data;
+//        f.size = h264encoder.getEncoderImageLength();
+//        f.pts = (int) time(NULL) / 1000;
+//        f.packet_type = VIDEO_TYPE;
+//        q.push(f);
+//
+//        free(encoded_image_buffer);
+//    }
 
     return textureId;
 }
@@ -236,6 +251,7 @@ void Android_JNI_opengl_setTextureTransformMatrix(JNIEnv *env, jobject object, j
 }
 
 void Android_JNI_opengl_release(JNIEnv *env, jobject object) {
+    videoEncode.close_h264_encode();
     openGL->release();
     if (outputBuffer && outputPixelBufferData) {
         env->DeleteGlobalRef(outputBuffer);

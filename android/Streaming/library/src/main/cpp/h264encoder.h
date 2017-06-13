@@ -6,7 +6,7 @@
 #define STREAMING_H264ENCODER_H
 
 #include <iosfwd>
-#include "wels/codec_api.h"
+//#include "wels/codec_api.h"
 #include <fstream>
 #include <iostream>
 
@@ -29,12 +29,12 @@ namespace wlanjie {
 
         int getEncoderImageLength();
     private:
-        SEncParamExt createEncoderParams() const;
+//        SEncParamExt createEncoderParams() const;
 
     private:
-        ISVCEncoder *encoder_;
-        SFrameBSInfo info;
-        Source_Picture_s _sourcePicture;
+//        ISVCEncoder *encoder_;
+//        SFrameBSInfo info;
+//        Source_Picture_s _sourcePicture;
         std::ofstream _outputStream;
 
         int frameWidth;
