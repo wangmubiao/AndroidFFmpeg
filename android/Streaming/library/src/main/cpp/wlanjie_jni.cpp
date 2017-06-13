@@ -44,6 +44,7 @@ wlanjie::H264encoder h264encoder;
 AudioEncode audioEncode;
 srs_rtmp_t rtmp;
 bool is_stop = false;
+std::ofstream _outputStream;
 
 static jobject outputBuffer;
 static jlong outputPixelBytes = 0;
@@ -57,6 +58,7 @@ void Android_JNI_startPublish(JNIEnv *env, jobject object) {
             LOGE("q.size = %d", q.size());
             q.pop();
             if (frame.packet_type == VIDEO_TYPE) {
+                _outputStream.write(frame.data, frame.size);
                 int ret = srs_h264_write_raw_frames(rtmp, frame.data, frame.size, frame.pts, frame.pts);
                 LOGE("write h264 ret = %d", ret);
             }
@@ -170,6 +172,7 @@ void Android_JNI_destroy(JNIEnv *env, jobject object) {
 }
 
 void Android_JNI_opengl_init(JNIEnv *env, jobject object, jint width, jint height) {
+    _outputStream.open("/sdcard/test.h264", std::ios_base::binary | std::ios_base::out);
     outputPixelBytes = width * height * 4;
     outputPixelBufferData = new unsigned char[outputPixelBytes];
     outputBuffer = env->NewDirectByteBuffer(outputPixelBufferData, outputPixelBytes);

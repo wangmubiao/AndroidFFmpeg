@@ -20,6 +20,7 @@ import com.wlanjie.streaming.configuration.CameraConfiguration;
 import com.wlanjie.streaming.configuration.VideoConfiguration;
 import com.wlanjie.streaming.rtmp.Rtmp;
 import com.wlanjie.streaming.video.EglCore;
+import com.wlanjie.streaming.video.WindowInputSurface;
 import com.wlanjie.streaming.video.WindowSurface;
 import com.wlanjie.streaming.view.SurfaceView;
 
@@ -42,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
   private float[] mProjectionMatrix = new float[16];
 
   private float[] mSurfaceMatrix = new float[16];
-
+  private WindowInputSurface mWindowInputSurface;
   float[] mTransformMatrix = new float[16];
   private Rtmp mRtmp = new Rtmp();
   private long time;
@@ -71,7 +72,8 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
       @Override
       public void run() {
         super.run();
-        mRtmp.connect("rtmp://192.168.0.106/live/test");
+        int ret = mRtmp.connect("rtmp://192.168.0.106/live/test");
+        System.out.println("ret = " + ret);
         mRtmp.startPublish();
       }
     }.start();
@@ -104,20 +106,23 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     mSurfaceTexture.release();
     mSurfaceTexture = null;
 
-    if (mWindowSurface != null) {
-      mWindowSurface.release();
-      mWindowSurface = null;
-    }
-    if (mEglCore != null) {
-      mEglCore.makeNothingCurrent();
-      mEglCore.release();
-    }
+//    if (mWindowSurface != null) {
+//      mWindowSurface.release();
+//      mWindowSurface = null;
+//    }
+//    if (mEglCore != null) {
+//      mEglCore.makeNothingCurrent();
+//      mEglCore.release();
+//    }
+    mWindowInputSurface.release();
   }
 
   @Override
   public void surfaceCreated(SurfaceHolder holder) {
-    mWindowSurface = new WindowSurface(mEglCore, holder.getSurface(), false);
-    mWindowSurface.makeCurrent();
+//    mWindowSurface = new WindowSurface(mEglCore, holder.getSurface(), false);
+//    mWindowSurface.makeCurrent();
+    mWindowInputSurface = new WindowInputSurface(holder.getSurface());
+    mWindowInputSurface.makeCurrent();
 
     int[] textures = new int[1];
     GLES20.glGenTextures(1, textures, 0);
@@ -174,7 +179,8 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 //    }
 //    ++count;
 
-    mWindowSurface.swapBuffers();
+//    mWindowSurface.swapBuffers();
+    mWindowInputSurface.swapBuffers();
   }
 
   private void saveFrame(ByteBuffer buf) {

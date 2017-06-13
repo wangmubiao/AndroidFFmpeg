@@ -73,26 +73,26 @@ SEncParamExt wlanjie::H264encoder::createEncoderParams() const {
     encoder_params.iPicWidth = frameWidth;
     encoder_params.iPicHeight = frameHeight;
     // uses bit/s kbit/s
-    encoder_params.iTargetBitrate = 800 * 1000;
+    encoder_params.iTargetBitrate = 512 * 1000;
     // max bit/s
-    encoder_params.iMaxBitrate = 1300 * 1000;
+    encoder_params.iMaxBitrate = 512 * 1000;
     encoder_params.iRCMode = RC_BITRATE_MODE;
-    encoder_params.fMaxFrameRate = 30;
+    encoder_params.fMaxFrameRate = 20;
     encoder_params.bEnableFrameSkip = true;
-    encoder_params.bEnableDenoise = true;
-    encoder_params.uiIntraPeriod = 2;
-    encoder_params.uiMaxNalSize = 1500;
-    encoder_params.iTemporalLayerNum = 3;
+    encoder_params.bEnableDenoise = false;
+    encoder_params.uiIntraPeriod = 60;
+    encoder_params.uiMaxNalSize = 0;
+    encoder_params.iTemporalLayerNum = 1;
     encoder_params.iSpatialLayerNum = 1;
-    encoder_params.bEnableLongTermReference = 0;
-    encoder_params.bEnableSceneChangeDetect = 0;
-    encoder_params.iMultipleThreadIdc = 4;
-    encoder_params.sSpatialLayers[0].iVideoHeight = 640;
-    encoder_params.sSpatialLayers[0].iVideoWidth = 360;
-    encoder_params.sSpatialLayers[0].fFrameRate = 30;
-    encoder_params.sSpatialLayers[0].iSpatialBitrate = 800 * 1000;
+    encoder_params.bEnableLongTermReference = false;
+    encoder_params.bEnableSceneChangeDetect = true;
+    encoder_params.iMultipleThreadIdc = 1;
+    encoder_params.sSpatialLayers[0].iVideoHeight = frameHeight;
+    encoder_params.sSpatialLayers[0].iVideoWidth = frameHeight;
+    encoder_params.sSpatialLayers[0].fFrameRate = 20;
+    encoder_params.sSpatialLayers[0].iSpatialBitrate = 512 * 1000;
 //    encoder_params.sSpatialLayers[0].iMaxSpatialBitrate = 0;
-    encoder_params.sSpatialLayers[0].sSliceArgument.uiSliceMode = SM_SINGLE_SLICE;
+//    encoder_params.sSpatialLayers[0].sSliceArgument.uiSliceMode = SM_AUTO_SLICE;
     encoder_params.eSpsPpsIdStrategy = CONSTANT_ID;
     return encoder_params;
 }
@@ -116,7 +116,7 @@ uint8_t *wlanjie::H264encoder::encoder(char *rgba, long pts) {
     }
     LOGE("%d", time(NULL));
 //    _sourcePicture.uiTimeStamp = time(NULL) / 1000 - present_time_us;
-    _sourcePicture.uiTimeStamp = pts;
+//    _sourcePicture.uiTimeStamp = pts;
     libyuv::ABGRToI420((const uint8 *) rgba, frameWidth * 4,
                        _sourcePicture.pData[0], _sourcePicture.iStride[0],
                        _sourcePicture.pData[1], _sourcePicture.iStride[1],
@@ -142,7 +142,7 @@ uint8_t *wlanjie::H264encoder::encoder(char *rgba, long pts) {
                 for (int nal = 0; nal < layerInfo.iNalCount; ++nal) {
                     layerSize += layerInfo.pNalLengthInByte[nal];
                 }
-                _outputStream.write((const char *) layerInfo.pBsBuf, layerSize);
+//                _outputStream.write((const char *) layerInfo.pBsBuf, layerSize);
                 memcpy(encoded_image_buffer + image_length, layerInfo.pBsBuf, layerSize);
                 image_length += layerSize;
             }
