@@ -4,6 +4,7 @@ import android.graphics.ImageFormat;
 import android.hardware.Camera;
 
 import com.wlanjie.streaming.configuration.CameraConfiguration;
+import com.wlanjie.streaming.setting.CameraSetting;
 
 import java.io.IOException;
 import java.util.SortedSet;
@@ -15,7 +16,7 @@ import java.util.SortedSet;
 public class Camera9 implements LivingCamera {
   private static final int INVALID_CAMERA_ID = -1;
 
-  private CameraConfiguration mCameraConfiguration;
+  private CameraSetting mCameraSetting;
   private Camera.CameraInfo mCameraInfo = new Camera.CameraInfo();
   private int mFacing;
   private int mCameraId;
@@ -25,10 +26,9 @@ public class Camera9 implements LivingCamera {
   private AspectRatio mAspectRatio;
   private boolean mShowingPreview;
 
-  public Camera9(CameraConfiguration configuration) {
-    mCameraConfiguration = configuration;
-    mAspectRatio = configuration.aspectRatio;
-    mFacing = configuration.facing;
+  public Camera9(CameraSetting cameraSetting) {
+    mCameraSetting = cameraSetting;
+    mFacing = mCameraSetting.getFacing;
   }
 
   @Override

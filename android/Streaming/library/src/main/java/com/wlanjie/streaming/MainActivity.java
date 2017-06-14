@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
       @Override
       public void run() {
         super.run();
-        int ret = mRtmp.connect("rtmp://192.168.0.106/live/test");
+        int ret = mRtmp.connect("rtmp://192.168.1.102/live/test");
         System.out.println("ret = " + ret);
         mRtmp.startPublish();
       }
