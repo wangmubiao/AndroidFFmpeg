@@ -64,7 +64,9 @@ void Android_JNI_startPublish(JNIEnv *env, jobject object) {
                 int ret = srs_h264_write_raw_frames(rtmp, frame.data, frame.size, frame.pts, frame.pts);
                 LOGE("write h264 ret = %d", ret);
             }
-            free(frame.data);
+            if (frame.data) {
+                free(frame.data);
+            }
         }
         usleep(1000 * 100);
     }
@@ -174,6 +176,7 @@ void Android_JNI_destroy(JNIEnv *env, jobject object) {
 }
 
 void Android_JNI_opengl_init(JNIEnv *env, jobject object, jint width, jint height) {
+    videoEncode.setEncodeResolution(width, height);
     videoEncode.open_h264_encode();
     _outputStream.open("/sdcard/test.h264", std::ios_base::binary | std::ios_base::out);
     outputPixelBytes = width * height * 4;
@@ -183,7 +186,7 @@ void Android_JNI_opengl_init(JNIEnv *env, jobject object, jint width, jint heigh
 
 //    h264encoder.setFrameSize(width, height);
     openGL->init(width, height);
-    Android_JNI_openH264Encoder(env, object);
+//    Android_JNI_openH264Encoder(env, object);
 }
 
 jint Android_JNI_opengl_draw(JNIEnv *env, jobject object, jint inputTextureId, jint pts) {

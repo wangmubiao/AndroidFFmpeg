@@ -52,14 +52,14 @@ int VideoEncode::open_h264_encode() {
     param.i_height = height;
 
     // Default setting i_rc_method as X264_RC_CRF which is better than X264_RC_ABR
-    param.rc.i_bitrate = bitrate;  // kbps
+    param.rc.i_bitrate = 500  * 1000;  // kbps
     param.rc.i_rc_method = X264_RC_ABR; //参数i_rc_method表示码率控制，CQP(恒定质量)，CRF(恒定码率)，ABR(平均码率)
 
 //    以下是2秒刷新一个I帧
     // fps
-    param.i_fps_num = fps;
+    param.i_fps_num = 24;
     param.i_fps_den = 1;
-    param.i_keyint_max = fps * 2;
+    param.i_keyint_max = 24 * 2;
 
     // 允许部分B帧为参考帧
 //    param.i_bframe_pyramid = 0;
@@ -76,7 +76,7 @@ int VideoEncode::open_h264_encode() {
     param.b_sliced_threads = false;
 
     // gop
-    param.i_keyint_max = gop;
+    param.i_keyint_max = 24 * 2;
 
     if (x264_param_apply_profile(&param, "baseline" ) < 0) {
         return -1;

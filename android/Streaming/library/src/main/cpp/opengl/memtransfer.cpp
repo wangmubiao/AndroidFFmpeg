@@ -166,6 +166,7 @@ GLuint wlanjie::Memtransfer::prepareOutput(int width, int height, int textureId)
     outputWidth = width;
     outputHeight = height;
 
+//    glViewport(0, 0, width, height);
     glBindTexture(GL_TEXTURE_2D, (GLuint) textureId);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);

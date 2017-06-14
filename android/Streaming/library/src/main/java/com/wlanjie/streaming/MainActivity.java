@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
       @Override
       public void run() {
         super.run();
-        int ret = mRtmp.connect("rtmp://192.168.1.102/live/test");
+        int ret = mRtmp.connect("rtmp://192.168.0.106/live/test");
         System.out.println("ret = " + ret);
         mRtmp.startPublish();
       }
@@ -147,7 +147,8 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
   @Override
   public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-    mOpenGL.init(1280, 768);
+    GLES20.glViewport(0, 0, width, height);
+    mOpenGL.init(640, 480);
     float outputAspectRatio = width > height ? (float) width / height : (float) height / width;
     float aspectRatio = outputAspectRatio / outputAspectRatio;
     if (width > height) {

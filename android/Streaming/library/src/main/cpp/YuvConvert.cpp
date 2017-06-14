@@ -16,7 +16,7 @@ YuvConvert::~YuvConvert() {
 
 YuvFrame *YuvConvert::rgba_convert_i420(char *rgba, int width, int height, bool need_flip,
                                    int rotate_degree) {
-    return convert_to_i420(rgba, width, height, need_flip, rotate_degree, libyuv::FOURCC_RGBA);
+    return convert_to_i420(rgba, width, height, need_flip, rotate_degree, libyuv::FOURCC_ABGR);
 }
 
 YuvFrame *YuvConvert::rgba_convert_nv12(char *rgba, int width, int height, bool need_flip,

@@ -220,6 +220,7 @@ public class Camera21 implements LivingCamera {
     SortedSet<Size> candidates = mPreviewSizes.sizes(mAspectRatio);
     // Pick the smallest of those big enough.
     for (Size size : candidates) {
+      Log.d("Camera", "width " + size.getWidth() + " height = " + size.getHeight());
       if (size.getWidth() >= surfaceLonger && size.getHeight() >= surfaceShorter) {
         return size;
       }

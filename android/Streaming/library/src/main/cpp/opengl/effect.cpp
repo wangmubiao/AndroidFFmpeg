@@ -52,6 +52,7 @@ void wlanjie::Effect::init(int width, int height) {
     this->width = width;
     this->height = height;
 
+//    glViewport(0, 0, width, height);
     buffer = (unsigned char *) malloc((size_t) (width * height * 4));
 
     glGenFramebuffers(1, &frameBufferId);
