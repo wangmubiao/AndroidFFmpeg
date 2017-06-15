@@ -32,10 +32,14 @@ const GLfloat effectVertexBuffer[] = {
 };
 
 const GLfloat effectTextureCoordinateBuffer[] = {
-        0.0f, 1.0f,
-        1.0f, 1.0f,
-        0.0f, 0.0f,
-        1.0f, 0.0f,
+//        0.0f, 1.0f,
+//        1.0f, 1.0f,
+//        0.0f, 0.0f,
+//        1.0f, 0.0f,
+        1.0f, 0.04858932f,
+        1.0f, 0.95141065f,
+        0.0f, 0.04858932f,
+        0.0f, 0.95141065f
 };
 
 wlanjie::Effect::Effect() {

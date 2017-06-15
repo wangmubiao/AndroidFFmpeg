@@ -29,7 +29,7 @@ import javax.microedition.khronos.opengles.GL10;
  * Created by wlanjie on 2017/5/22.
  */
 
-public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture.OnFrameAvailableListener, SurfaceRenderer.OnSurfaceListener, SurfaceRenderer.OnRendererEncoderListener {
+public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture.OnFrameAvailableListener, SurfaceRenderer.OnRendererEncoderListener {
 
   private SurfaceTexture mSurfaceTexture;
   private LivingCamera mCamera;
@@ -67,16 +67,15 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
     if (configuration == null) {
       configuration = CameraConfiguration.createDefault();
     }
-    if (Build.VERSION.SDK_INT < 21) {
-      mCamera = new Camera9(configuration);
-    } else if (Build.VERSION.SDK_INT < 23) {
-      mCamera = new Camera21(mContext, configuration);
-    } else {
-      mCamera = new Camera21(mContext, configuration);
-    }
+//    if (Build.VERSION.SDK_INT < 21) {
+//      mCamera = new Camera9(configuration);
+//    } else if (Build.VERSION.SDK_INT < 23) {
+//      mCamera = new Camera21(mContext, configuration);
+//    } else {
+//      mCamera = new Camera21(mContext, configuration);
+//    }
 
     SurfaceRenderer mSurfaceRenderer = new SoftSurfaceRenderer(getContext(), mSurfaceTexture, mSurfaceTextureId);
-    mSurfaceRenderer.setOnSurfaceListener(this);
     mSurfaceRenderer.setOnRendererEncoderListener(this);
 
     setEGLContextClientVersion(2);
@@ -103,33 +102,6 @@ public class RendererSurfaceView extends GLSurfaceView implements SurfaceTexture
   @Override
   public void onFrameAvailable(SurfaceTexture surfaceTexture) {
     requestRender();
-  }
-
-  @Override
-  public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-
-  }
-
-  @Override
-  public void onSurfaceChanged(GL10 gl, int width, int height) {
-    CameraConfiguration.Builder builder = mCameraConfiguration.builder;
-    if (mCameraConfiguration.width == 0 && mCameraConfiguration.height == 0) {
-      builder.setPreview(height, width);
-    }
-    if (mCameraConfiguration.facing == -1) {
-      builder.setFacing(Constants.FACING_BACK);
-    }
-    if (mCameraConfiguration.surfaceTexture == null) {
-      builder.setSurfaceTexture(mSurfaceTexture);
-    }
-
-    mCamera.updateCameraConfiguration(builder.build());
-    mCamera.start();
-  }
-
-  @Override
-  public void onDrawFrame(GL10 gl) {
-
   }
 
   @Override

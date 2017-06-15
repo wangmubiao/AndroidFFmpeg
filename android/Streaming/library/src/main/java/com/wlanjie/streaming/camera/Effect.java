@@ -184,4 +184,9 @@ public final class Effect {
     destroyVbo();
     GLES20.glDeleteProgram(mProgramId);
   }
+
+  public void updateTextureCoordinate(float[] textureCords) {
+    mTextureBuffer.clear();
+    mTextureBuffer.put(textureCords).position(0);
+  }
 }

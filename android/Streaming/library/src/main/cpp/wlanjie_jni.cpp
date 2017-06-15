@@ -190,31 +190,21 @@ void Android_JNI_opengl_init(JNIEnv *env, jobject object, jint width, jint heigh
 }
 
 jint Android_JNI_opengl_draw(JNIEnv *env, jobject object, jint inputTextureId, jint pts) {
+    LOGE("opengl draw");
     int textureId = openGL->draw(inputTextureId);
-    unsigned char* buffer = openGL->getBuffer();
-
-//    int width = openGL->getWidth();
-//    int height = openGL->getHeight();
-//    size_t ySize = (size_t) (openGL->getWidth() * openGL->getHeight());
-//    uint8_t *y = new uint8_t[ySize * 3 / 2];
-//    uint8_t *u = y + ySize;
-//    uint8_t *v = u + ySize / 4;
-//    libyuv::ConvertToI420(buffer, ySize, y, width, u, width / 2, v, width / 2, 0, 0, width, height, width, height, libyuv::kRotate0, libyuv::FOURCC_RGBA);
-//    uint8_t *encoded_image_buffer = h264encoder.startEncoder(y, ySize, u, width / 2, v, width / 2);
-//
+//    unsigned char* buffer = openGL->getBuffer();
 //    uint8_t *encoded_image_buffer = h264encoder.encoder((char *) buffer, pts);
-    int h264_size = videoEncode.rgba_encode_to_h264((char *) buffer, openGL->getWidth(), openGL->getHeight(), false, 0, pts);
-    if (h264_size > 0 && videoEncode.get_h264() != NULL) {
-        char *frame_data = new char[h264_size];
-        memcpy(frame_data, videoEncode.get_h264(), (size_t) h264_size);
-        Frame f;
-        f.data = frame_data;
-        f.size = h264_size;
-        f.pts = pts;
-        f.packet_type = VIDEO_TYPE;
-        q.push(f);
-//
-    }
+//    int h264_size = videoEncode.rgba_encode_to_h264((char *) buffer, openGL->getWidth(), openGL->getHeight(), false, 0, pts);
+//    if (h264_size > 0 && videoEncode.get_h264() != NULL) {
+//        char *frame_data = new char[h264_size];
+//        memcpy(frame_data, videoEncode.get_h264(), (size_t) h264_size);
+//        Frame f;
+//        f.data = frame_data;
+//        f.size = h264_size;
+//        f.pts = pts;
+//        f.packet_type = VIDEO_TYPE;
+//        q.push(f);
+//    }
 
 //    if (encoded_image_buffer != NULL && h264encoder.getEncoderImageLength() > 0) {
 //        LOGE("encoded_image_buffer_length = %d", h264encoder.getEncoderImageLength());

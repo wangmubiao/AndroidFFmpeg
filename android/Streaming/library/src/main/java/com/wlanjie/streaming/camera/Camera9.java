@@ -3,10 +3,14 @@ package com.wlanjie.streaming.camera;
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
 
+import com.wlanjie.streaming.callback.*;
+import com.wlanjie.streaming.callback.CameraCallback;
 import com.wlanjie.streaming.configuration.CameraConfiguration;
 import com.wlanjie.streaming.setting.CameraSetting;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.SortedSet;
 
 /**
@@ -18,17 +22,18 @@ public class Camera9 implements LivingCamera {
 
   private CameraSetting mCameraSetting;
   private Camera.CameraInfo mCameraInfo = new Camera.CameraInfo();
-  private int mFacing;
+  private CameraSetting.CameraFacingId mFacing;
   private int mCameraId;
   private Camera mCamera;
   private Camera.Parameters mCameraParameters;
-  private final SizeMap mPreviewSizes = new SizeMap();
+  private final List<Size> mPreviewSizes = new LinkedList<>();
   private AspectRatio mAspectRatio;
   private boolean mShowingPreview;
+  private CameraCallback mCameraCallback;
 
   public Camera9(CameraSetting cameraSetting) {
     mCameraSetting = cameraSetting;
-    mFacing = mCameraSetting.getFacing;
+    mFacing = mCameraSetting.getFacing();
   }
 
   @Override
@@ -37,7 +42,7 @@ public class Camera9 implements LivingCamera {
     openCamera();
     if (mCamera != null) {
       try {
-        mCamera.setPreviewTexture(mCameraConfiguration.surfaceTexture);
+        mCamera.setPreviewTexture(mCameraSetting.getSurfaceTexture());
       } catch (IOException e) {
         e.printStackTrace();
       }
@@ -47,7 +52,7 @@ public class Camera9 implements LivingCamera {
   private void chooseCamera() {
     for (int i = 0, count = Camera.getNumberOfCameras(); i < count; i++) {
       Camera.getCameraInfo(i, mCameraInfo);
-      if (mCameraInfo.facing == mFacing) {
+      if (mCameraInfo.facing == mFacing.ordinal()) {
         mCameraId = i;
         return;
       }
@@ -66,20 +71,21 @@ public class Camera9 implements LivingCamera {
       mPreviewSizes.add(new Size(size.width, size.height));
     }
     adjustCameraParameters();
-    mCamera.setDisplayOrientation(calcCameraRotation(mCameraConfiguration.displayOrientation));
+    mCamera.setDisplayOrientation(calcCameraRotation(mCameraSetting.getDisplayOrientation()));
   }
 
   private void adjustCameraParameters() {
-    SortedSet<Size> sizes = mPreviewSizes.sizes(mAspectRatio);
-    if (sizes == null) {
-      mAspectRatio = chooseAspectRatio();
-      sizes = mPreviewSizes.sizes(mAspectRatio);
+    Size size;
+    if (mCameraCallback != null) {
+      size = mCameraCallback.onPreviewSizeSelected(mPreviewSizes);
+    } else {
+      size = mPreviewSizes.get(mPreviewSizes.size() / 2);
     }
-    Size size = chooseOptimalSize(sizes);
     if (mShowingPreview) {
       mCamera.stopPreview();
     }
-    mCameraParameters.setRotation(calcCameraRotation(mCameraConfiguration.displayOrientation));
+
+    mCameraParameters.setRotation(calcCameraRotation(mCameraSetting.getDisplayOrientation()));
     int[] fps = chooseFpsRange();
     mCameraParameters.setPreviewFpsRange(fps[0], fps[1]);
     mCameraParameters.setPreviewFormat(ImageFormat.NV21);
@@ -88,7 +94,7 @@ public class Camera9 implements LivingCamera {
     }
     mCameraParameters.setPreviewSize(size.getWidth(), size.getHeight());
     mCamera.setParameters(mCameraParameters);
-    mCamera.setDisplayOrientation(calcCameraRotation(mCameraConfiguration.displayOrientation));
+    mCamera.setDisplayOrientation(calcCameraRotation(mCameraSetting.getDisplayOrientation()));
     mCamera.startPreview();
     mShowingPreview = true;
   }
@@ -109,41 +115,30 @@ public class Camera9 implements LivingCamera {
     }
     return closestRange;
   }
-
-  private AspectRatio chooseAspectRatio() {
-    AspectRatio r = null;
-    for (AspectRatio aspectRatio : mPreviewSizes.ratios()) {
-      r = aspectRatio;
-      if (aspectRatio.equals(Constants.DEFAULT_ASPECT_RATIO)) {
-        return aspectRatio;
-      }
-    }
-    return r;
-  }
-
-  @SuppressWarnings("SuspiciousNameCombination")
-  private Size chooseOptimalSize(SortedSet<Size> sizes) {
-    int desiredWidth;
-    int desiredHeight;
-    final int surfaceWidth = mCameraConfiguration.width;
-    final int surfaceHeight = mCameraConfiguration.height;
-    if (mCameraConfiguration.displayOrientation == 90 || mCameraConfiguration.displayOrientation == 270) {
-      desiredWidth = surfaceHeight;
-      desiredHeight = surfaceWidth;
-    } else {
-      desiredWidth = surfaceWidth;
-      desiredHeight = surfaceHeight;
-    }
-    Size result = null;
-    for (Size size : sizes) { // Iterate from small to large
-      if (desiredWidth <= size.getWidth() && desiredHeight <= size.getHeight()) {
-        return size;
-
-      }
-      result = size;
-    }
-    return result;
-  }
+//
+//  @SuppressWarnings("SuspiciousNameCombination")
+//  private Size chooseOptimalSize(SortedSet<Size> sizes) {
+//    int desiredWidth;
+//    int desiredHeight;
+//    final int surfaceWidth = mCameraConfiguration.width;
+//    final int surfaceHeight = mCameraConfiguration.height;
+//    if (mCameraSetting.getDisplayOrientation() == 90 || mCameraSetting.getDisplayOrientation() == 270) {
+//      desiredWidth = surfaceHeight;
+//      desiredHeight = surfaceWidth;
+//    } else {
+//      desiredWidth = surfaceWidth;
+//      desiredHeight = surfaceHeight;
+//    }
+//    Size result = null;
+//    for (Size size : sizes) { // Iterate from small to large
+//      if (desiredWidth <= size.getWidth() && desiredHeight <= size.getHeight()) {
+//        return size;
+//
+//      }
+//      result = size;
+//    }
+//    return result;
+//  }
 
   private int calcCameraRotation(int rotation) {
     if (mCameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
@@ -158,7 +153,9 @@ public class Camera9 implements LivingCamera {
       mCamera.setPreviewCallbackWithBuffer(null);
       mCamera.release();
       mCamera = null;
-      mCameraConfiguration.cameraCallback.onCameraClosed();
+      if (mCameraCallback != null) {
+        mCameraCallback.onCloseCamera();
+      }
     }
   }
 
@@ -177,7 +174,7 @@ public class Camera9 implements LivingCamera {
   }
 
   @Override
-  public void setFacing(int facing) {
+  public void setFacing(CameraSetting.CameraFacingId facing) {
     if (facing == mFacing) {
       return;
     }
@@ -189,12 +186,17 @@ public class Camera9 implements LivingCamera {
   }
 
   @Override
-  public int getFacing() {
+  public CameraSetting.CameraFacingId getFacing() {
     return mFacing;
   }
 
   @Override
   public void updateCameraConfiguration(CameraConfiguration configuration) {
-    mCameraConfiguration = configuration;
+//    mCameraConfiguration = configuration;
+  }
+
+  @Override
+  public void setCameraCallback(CameraCallback callback) {
+    mCameraCallback = callback;
   }
 }

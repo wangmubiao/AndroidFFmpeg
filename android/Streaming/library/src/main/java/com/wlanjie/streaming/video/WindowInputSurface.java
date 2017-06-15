@@ -85,7 +85,7 @@ public class WindowInputSurface {
 
     checkEglError("eglCreateContext");
 
-    mEGLSurface         = EGL14.eglCreateWindowSurface(mEGLDisplay, configs[0], mSurface,
+    mEGLSurface         = EGL14.eglCreateWindowSurface(mEGLDisplay, configs[0], mSurface == null ? mSurfaceTexture : mSurface,
       mSurfaceAttribs, 0);
     checkEglError("eglCreateWindowSurface");
 

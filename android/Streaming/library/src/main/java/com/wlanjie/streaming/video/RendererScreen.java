@@ -105,4 +105,9 @@ public class RendererScreen {
 
     GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
   }
+
+  public void updateTextureCoordinate(float[] textureCords) {
+    mTextureBuffer.clear();
+    mTextureBuffer.put(textureCords).position(0);
+  }
 }

@@ -20,9 +20,13 @@ import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.Surface;
 
+import com.wlanjie.streaming.callback.*;
+import com.wlanjie.streaming.callback.CameraCallback;
 import com.wlanjie.streaming.configuration.CameraConfiguration;
+import com.wlanjie.streaming.setting.CameraSetting;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.SortedSet;
 
@@ -32,8 +36,8 @@ import java.util.SortedSet;
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class Camera21 implements LivingCamera {
   private static final String TAG = Camera21.class.getSimpleName();
-
   private static final SparseIntArray INTERNAL_FACINGS = new SparseIntArray();
+  private CameraCallback mCameraCallback;
 
   static {
     INTERNAL_FACINGS.put(Constants.FACING_BACK, CameraCharacteristics.LENS_FACING_BACK);
@@ -42,22 +46,22 @@ public class Camera21 implements LivingCamera {
 
   private final CameraManager mCameraManager;
 
-  private CameraConfiguration mCameraConfiguration;
+  private CameraSetting mCameraSetting;
+//  private CameraConfiguration mCameraConfiguration;
   private HandlerThread mBackgroundThread;
   private Handler mBackgroundHandler;
   private String mCameraId;
   private CameraCharacteristics mCameraCharacteristics;
-  private int mFacing;
-  private SizeMap mPreviewSizes = new SizeMap();
+  private CameraSetting.CameraFacingId mFacing;
+  private final List<Size> mPreviewSizes = new LinkedList<>();
   private AspectRatio mAspectRatio;
   private CaptureRequest.Builder mPreviewRequestBuilder;
   private CameraDevice mCamera;
   private CameraCaptureSession mCaptureSession;
   private ImageReader mImageReader;
 
-  public Camera21(Context context, CameraConfiguration configuration) {
-    mCameraConfiguration = configuration;
-    mFacing = configuration.facing;
+  public Camera21(Context context, CameraSetting cameraSetting) {
+    mCameraSetting = cameraSetting;
     mCameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
   }
 
@@ -81,7 +85,7 @@ public class Camera21 implements LivingCamera {
 
   private void chooseCameraIdByFacing() {
     try {
-      int internalFacing = INTERNAL_FACINGS.get(mFacing);
+      int internalFacing = INTERNAL_FACINGS.get(CameraSetting.CameraFacingId.CAMERA_FACING_FRONT.ordinal());
       final String[] ids = mCameraManager.getCameraIdList();
       for (String id : ids) {
         CameraCharacteristics characteristics = mCameraManager.getCameraCharacteristics(id);
@@ -102,15 +106,17 @@ public class Camera21 implements LivingCamera {
       if (internal == null) {
         throw new NullPointerException("Unexpected state: LENS_FACING null");
       }
-      for (int i = 0, count = INTERNAL_FACINGS.size(); i < count; i++) {
-        if (INTERNAL_FACINGS.valueAt(i) == internal) {
-          mFacing = INTERNAL_FACINGS.keyAt(i);
-          return;
-        }
-      }
-      // The operation can reach here when the only camera device is an external one.
-      // We treat it as facing back.
-      mFacing = Constants.FACING_BACK;
+//      for (int i = 0, count = INTERNAL_FACINGS.size(); i < count; i++) {
+//        if (INTERNAL_FACINGS.valueAt(i) == internal) {
+//          mFacing = INTERNAL_FACINGS.keyAt(i);
+//          return;
+//        }
+//      }
+//      // The operation can reach here when the only camera device is an external one.
+//      // We treat it as facing back.
+//      mFacing = Constants.FACING_BACK;
+
+      mFacing = CameraSetting.CameraFacingId.CAMERA_FACING_FRONT;
     } catch (CameraAccessException e) {
       throw new RuntimeException("Failed to get a list of camera devices", e);
     }
@@ -124,9 +130,6 @@ public class Camera21 implements LivingCamera {
     mPreviewSizes.clear();
     for (android.util.Size size : map.getOutputSizes(SurfaceTexture.class)) {
       mPreviewSizes.add(new Size(size.getWidth(), size.getHeight()));
-    }
-    if (!mPreviewSizes.ratios().contains(mAspectRatio)) {
-      mAspectRatio = mPreviewSizes.ratios().iterator().next();
     }
   }
 
@@ -159,14 +162,19 @@ public class Camera21 implements LivingCamera {
     if (!isCameraOpened()) {
       return;
     }
-    Size previewSize = chooseOptimalSize();
-    mCameraConfiguration.surfaceTexture.setDefaultBufferSize(previewSize.getWidth(), previewSize.getHeight());
+    Size previewSize;
+    if (mCameraCallback != null) {
+      previewSize = mCameraCallback.onPreviewSizeSelected(mPreviewSizes);
+    } else {
+      previewSize = mPreviewSizes.get(mPreviewSizes.size() / 2);
+    }
+    mCameraSetting.getSurfaceTexture().setDefaultBufferSize(previewSize.getWidth(), previewSize.getHeight());
 
     try {
       mPreviewRequestBuilder = mCamera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
 
       List<Surface> surfaces = new ArrayList<>();
-      Surface surface = new Surface(mCameraConfiguration.surfaceTexture);
+      Surface surface = new Surface(mCameraSetting.getSurfaceTexture());
       surfaces.add(surface);
       mPreviewRequestBuilder.addTarget(surface);
       mCamera.createCaptureSession(surfaces, new CameraCaptureSession.StateCallback() {
@@ -204,29 +212,6 @@ public class Camera21 implements LivingCamera {
     } catch (CameraAccessException e) {
       throw new RuntimeException("Failed to start camera session");
     }
-  }
-
-  private Size chooseOptimalSize() {
-    int surfaceLonger, surfaceShorter;
-    final int surfaceWidth = mCameraConfiguration.width;
-    final int surfaceHeight = mCameraConfiguration.height;
-    if (surfaceWidth < surfaceHeight) {
-      surfaceLonger = surfaceHeight;
-      surfaceShorter = surfaceWidth;
-    } else {
-      surfaceLonger = surfaceWidth;
-      surfaceShorter = surfaceHeight;
-    }
-    SortedSet<Size> candidates = mPreviewSizes.sizes(mAspectRatio);
-    // Pick the smallest of those big enough.
-    for (Size size : candidates) {
-      Log.d("Camera", "width " + size.getWidth() + " height = " + size.getHeight());
-      if (size.getWidth() >= surfaceLonger && size.getHeight() >= surfaceShorter) {
-        return size;
-      }
-    }
-    // If no size is big enough, pick the largest one.
-    return candidates.last();
   }
 
   private void updatePreview() {
@@ -273,7 +258,7 @@ public class Camera21 implements LivingCamera {
   }
 
   @Override
-  public void setFacing(int facing) {
+  public void setFacing(CameraSetting.CameraFacingId facing) {
     if (mFacing == facing) {
       return;
     }
@@ -285,12 +270,16 @@ public class Camera21 implements LivingCamera {
   }
 
   @Override
-  public int getFacing() {
+  public CameraSetting.CameraFacingId getFacing() {
     return mFacing;
   }
 
   @Override
   public void updateCameraConfiguration(CameraConfiguration configuration) {
-    mCameraConfiguration = configuration;
+  }
+
+  @Override
+  public void setCameraCallback(CameraCallback callback) {
+    mCameraCallback = callback;
   }
 }

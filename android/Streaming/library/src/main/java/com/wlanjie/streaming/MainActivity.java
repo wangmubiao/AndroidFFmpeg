@@ -3,26 +3,24 @@ package com.wlanjie.streaming;
 import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
+import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.SurfaceHolder;
 
-import com.wlanjie.streaming.camera.Camera21;
-import com.wlanjie.streaming.camera.Camera9;
 import com.wlanjie.streaming.camera.CameraView;
 import com.wlanjie.streaming.camera.Constants;
 import com.wlanjie.streaming.camera.LivingCamera;
 import com.wlanjie.streaming.configuration.CameraConfiguration;
 import com.wlanjie.streaming.configuration.VideoConfiguration;
 import com.wlanjie.streaming.rtmp.Rtmp;
+import com.wlanjie.streaming.setting.CameraSetting;
 import com.wlanjie.streaming.video.EglCore;
 import com.wlanjie.streaming.video.WindowInputSurface;
 import com.wlanjie.streaming.video.WindowSurface;
-import com.wlanjie.streaming.view.SurfaceView;
 
 import java.io.BufferedOutputStream;
 import java.io.FileNotFoundException;
@@ -47,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
   float[] mTransformMatrix = new float[16];
   private Rtmp mRtmp = new Rtmp();
   private long time;
+  private MediaStreamingManager mMediaStreamingManager;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -60,51 +59,45 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
       actionBar.setDisplayShowTitleEnabled(false);
     }
 
-    mCameraView = (CameraView) findViewById(R.id.surface_view);
-    mCameraView.setVideoConfiguration(VideoConfiguration.createDefault());
-    mCameraView.setCameraConfiguration(CameraConfiguration.createDefault());
-    mCameraView.start("rtmp://192.168.1.102/live/livestream");
+    GLSurfaceView glSurfaceView = (GLSurfaceView) findViewById(R.id.gl_surface);
+    mMediaStreamingManager = new MediaStreamingManager(glSurfaceView);
 
-    mEglCore = new EglCore();
-
-    time = System.nanoTime() / 1000;
-    new Thread(){
-      @Override
-      public void run() {
-        super.run();
-        int ret = mRtmp.connect("rtmp://192.168.1.102/live/test");
-        System.out.println("ret = " + ret);
-        mRtmp.startPublish();
-      }
-    }.start();
+    CameraSetting cameraSetting = new CameraSetting();
+    cameraSetting.setFacing(CameraSetting.CameraFacingId.CAMERA_FACING_FRONT);
+//    cameraSetting.setDisplayOrientation(180);
+    mMediaStreamingManager.prepare(cameraSetting, null, null);
   }
 
   @Override
   protected void onResume() {
     super.onResume();
-    configuration = CameraConfiguration.createDefault();
-    if (Build.VERSION.SDK_INT < 21) {
-      mCamera = new Camera9(configuration);
-    } else if (Build.VERSION.SDK_INT < 23) {
-      mCamera = new Camera21(this, configuration);
-    } else {
-      mCamera = new Camera21(this, configuration);
-    }
+    mMediaStreamingManager.resume();
 
-    android.view.SurfaceView surfaceView = (android.view.SurfaceView) findViewById(R.id.surface);
-    surfaceView.getHolder().addCallback(this);
+//    configuration = CameraConfiguration.createDefault();
+//    if (Build.VERSION.SDK_INT < 21) {
+//      mCamera = new Camera9(configuration);
+//    } else if (Build.VERSION.SDK_INT < 23) {
+//      mCamera = new Camera21(this, configuration);
+//    } else {
+//      mCamera = new Camera21(this, configuration);
+//    }
+//
+//    android.view.SurfaceView surfaceView = (android.view.SurfaceView) findViewById(R.id.surface);
+//    surfaceView.getHolder().addCallback(this);
   }
 
   @Override
   protected void onPause() {
     super.onPause();
-    mCamera.stop();
-    GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
-    int[] texture = { mSurfaceTextureId };
-    GLES20.glDeleteTextures(1, texture, 0);
+    mMediaStreamingManager.pause();
 
-    mSurfaceTexture.release();
-    mSurfaceTexture = null;
+//    mCamera.stop();
+//    GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
+//    int[] texture = { mSurfaceTextureId };
+//    GLES20.glDeleteTextures(1, texture, 0);
+//
+//    mSurfaceTexture.release();
+//    mSurfaceTexture = null;
 
 //    if (mWindowSurface != null) {
 //      mWindowSurface.release();
@@ -114,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 //      mEglCore.makeNothingCurrent();
 //      mEglCore.release();
 //    }
-    mWindowInputSurface.release();
+//    mWindowInputSurface.release();
   }
 
   @Override
