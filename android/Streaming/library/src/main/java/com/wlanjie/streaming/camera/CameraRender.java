@@ -58,6 +58,7 @@ public class CameraRender implements SurfaceTexture.OnFrameAvailableListener, Su
 
   public void resume() {
     mCamera.start();
+    mRenderer.setPreviewSize(mCamera.getPreviewSize());
   }
 
   public void pause() {

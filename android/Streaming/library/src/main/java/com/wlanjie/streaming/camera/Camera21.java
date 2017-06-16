@@ -270,6 +270,11 @@ public class Camera21 implements LivingCamera {
   }
 
   @Override
+  public Size getPreviewSize() {
+    return null;
+  }
+
+  @Override
   public CameraSetting.CameraFacingId getFacing() {
     return mFacing;
   }

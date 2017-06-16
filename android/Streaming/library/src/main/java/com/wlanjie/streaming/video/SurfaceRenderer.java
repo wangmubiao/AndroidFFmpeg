@@ -7,6 +7,7 @@ import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 
 import com.wlanjie.streaming.callback.SurfaceTextureCallback;
+import com.wlanjie.streaming.camera.Size;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ public abstract class SurfaceRenderer implements GLSurfaceView.Renderer {
   float[] mTransformMatrix = new float[16];
   private List<SurfaceTextureCallback> mSurfaceTextureCallbacks = new ArrayList<>();
   private Context mContext;
+  Size mPreviewSize;
 
   SurfaceRenderer(Context context, SurfaceTexture texture, int surfaceTextureId) {
     mContext = context;
@@ -37,6 +39,10 @@ public abstract class SurfaceRenderer implements GLSurfaceView.Renderer {
 
   public void addSurfaceTextureCallback(SurfaceTextureCallback callback) {
     mSurfaceTextureCallbacks.add(callback);
+  }
+
+  public void setPreviewSize(Size size) {
+    mPreviewSize = size;
   }
 
   @Override

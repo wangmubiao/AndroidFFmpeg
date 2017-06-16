@@ -19,5 +19,7 @@ public interface LivingCamera {
 
   void updateCameraConfiguration(CameraConfiguration configuration);
 
+  Size getPreviewSize();
+
   void setCameraCallback(com.wlanjie.streaming.callback.CameraCallback callback);
 }

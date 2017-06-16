@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.SurfaceTexture;
 
 import com.wlanjie.streaming.camera.Effect;
+import com.wlanjie.streaming.camera.Size;
 import com.wlanjie.streaming.utils.OpenGLUtils;
 import com.wlanjie.streaming.utils.Rotation;
 import com.wlanjie.streaming.utils.TextureRotationUtil;
@@ -27,6 +28,14 @@ public class HardSurfaceRenderer extends SurfaceRenderer {
   }
 
   @Override
+  public void setPreviewSize(Size size) {
+    super.setPreviewSize(size);
+    if (size != null) {
+
+    }
+  }
+
+  @Override
   public void onSurfaceCreated(GL10 gl, EGLConfig config) {
     super.onSurfaceCreated(gl, config);
     mEffect.init();
@@ -36,9 +45,13 @@ public class HardSurfaceRenderer extends SurfaceRenderer {
   @Override
   public void onSurfaceChanged(GL10 gl, int width, int height) {
     super.onSurfaceChanged(gl, width, height);
-    mEffect.onInputSizeChanged(width, height);
+//    mEffect.onInputSizeChanged(1280, 720);
     mEffect.onDisplaySizeChange(width, height);
-    adjustImageScaling(width, height, 1024, 768);
+    mRendererScreen.setDisplaySize(width, height);
+
+    mEffect.onInputSizeChanged(mPreviewSize.getWidth(), mPreviewSize.getHeight());
+    mRendererScreen.setPreviewSize(mPreviewSize.getWidth(), mPreviewSize.getHeight());
+//    adjustImageScaling(width, height, 1024, 768);
   }
 
   private void adjustImageScaling(int displayWidth, int displayHeight, int imageWidth, int imageHeight) {

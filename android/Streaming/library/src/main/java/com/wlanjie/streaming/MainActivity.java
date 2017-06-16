@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     CameraSetting cameraSetting = new CameraSetting();
     cameraSetting.setFacing(CameraSetting.CameraFacingId.CAMERA_FACING_FRONT);
-//    cameraSetting.setDisplayOrientation(180);
+//    cameraSetting.setDisplayOrientation(270);
     mMediaStreamingManager.prepare(cameraSetting, null, null);
   }
 

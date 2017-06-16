@@ -30,6 +30,7 @@ public class Camera9 implements LivingCamera {
   private AspectRatio mAspectRatio;
   private boolean mShowingPreview;
   private CameraCallback mCameraCallback;
+  private Size mPreviewSize;
 
   public Camera9(CameraSetting cameraSetting) {
     mCameraSetting = cameraSetting;
@@ -75,11 +76,10 @@ public class Camera9 implements LivingCamera {
   }
 
   private void adjustCameraParameters() {
-    Size size;
     if (mCameraCallback != null) {
-      size = mCameraCallback.onPreviewSizeSelected(mPreviewSizes);
+      mPreviewSize = mCameraCallback.onPreviewSizeSelected(mPreviewSizes);
     } else {
-      size = mPreviewSizes.get(mPreviewSizes.size() / 2);
+      mPreviewSize = mPreviewSizes.get(mPreviewSizes.size() / 2);
     }
     if (mShowingPreview) {
       mCamera.stopPreview();
@@ -92,7 +92,7 @@ public class Camera9 implements LivingCamera {
     if (mShowingPreview) {
       mCamera.stopPreview();
     }
-    mCameraParameters.setPreviewSize(size.getWidth(), size.getHeight());
+    mCameraParameters.setPreviewSize(mPreviewSize.getWidth(), mPreviewSize.getHeight());
     mCamera.setParameters(mCameraParameters);
     mCamera.setDisplayOrientation(calcCameraRotation(mCameraSetting.getDisplayOrientation()));
     mCamera.startPreview();
@@ -188,6 +188,11 @@ public class Camera9 implements LivingCamera {
   @Override
   public CameraSetting.CameraFacingId getFacing() {
     return mFacing;
+  }
+
+  @Override
+  public Size getPreviewSize() {
+    return mPreviewSize;
   }
 
   @Override

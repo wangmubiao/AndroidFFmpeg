@@ -46,10 +46,14 @@ public class RendererScreen {
   };
 
   private static final float CUBE[] = {
-    -1.0f, -1.0f,
-    1.0f, -1.0f,
-    -1.0f, 1.0f,
-    1.0f, 1.0f
+//    -1.0f, -1.0f,
+//    1.0f, -1.0f,
+//    -1.0f, 1.0f,
+//    1.0f, 1.0f
+    -1f, 1f,
+    -1f, -1f,
+    1f, 1f,
+    1f, -1f
   };
 
   private final FloatBuffer mCubeBuffer;
@@ -60,6 +64,8 @@ public class RendererScreen {
   private int mScreenPosition;
   private int mScreenUniformTexture;
   private int mScreenTextureCoordinate;
+  private int mWidth;
+  private int mHeight;
   private Resources mResources;
 
   public RendererScreen(Context context) {
@@ -80,10 +86,54 @@ public class RendererScreen {
     mScreenPosition = GLES20.glGetAttribLocation(mScreenProgramId, "position");
     mScreenUniformTexture = GLES20.glGetUniformLocation(mScreenProgramId, "inputImageTexture");
     mScreenTextureCoordinate = GLES20.glGetAttribLocation(mScreenProgramId, "inputTextureCoordinate");
+  }
 
+  public void setPreviewSize(int width, int height) {
+    int cameraWidth;
+    int cameraHeight;
+    // 横屏
+    if (false) {
+      cameraWidth = Math.max(width, height);
+      cameraHeight = Math.min(width, height);
+    } else {
+      cameraWidth = Math.min(width, height);
+      cameraHeight = Math.max(width, height);
+    }
+    float hRatio = mWidth / ((float) cameraWidth);
+    float vRatio = mHeight / ((float) cameraHeight);
+    float ratio;
+    if (hRatio > vRatio) {
+      ratio = mHeight / (cameraHeight * hRatio);
+      final float vtx[] = {
+        0f, 0.5f + ratio / 2,
+        0f, 0.5f - ratio / 2,
+        1f, 0.5f + ratio / 2,
+        1f, 0.5f - ratio / 2
+      };
+      mTextureBuffer.clear();
+      mTextureBuffer.put(vtx);
+      mTextureBuffer.position(0);
+    } else {
+      ratio = mWidth / (cameraWidth * vRatio);
+      final float vtx[] = {
+        0.5f - ratio / 2, 1f,
+        0.5f - ratio / 2, 0f,
+        0.5f + ratio / 2, 1f,
+        0.5f + ratio / 2, 0f
+      };
+      mTextureBuffer.clear();
+      mTextureBuffer.put(vtx);
+      mTextureBuffer.position(0);
+    }
+  }
+
+  public void setDisplaySize(int width, int height) {
+    mWidth = width;
+    mHeight = height;
   }
 
   public void draw(int textureId) {
+    GLES20.glViewport(0, 0, mWidth, mHeight);
     GLES20.glUseProgram(mScreenProgramId);
 
     GLES20.glEnableVertexAttribArray(mScreenPosition);
